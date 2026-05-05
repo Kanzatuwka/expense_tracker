@@ -1,0 +1,121 @@
+# =============================================================================
+# Miscellaneous / OS
+# =============================================================================
+*.bak
+*.class
+*.log
+*.mode1v3
+*.mode2v3
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# =============================================================================
+# Project-specific
+# =============================================================================
+.metadata
+**/settings.local.json
+
+# =============================================================================
+# IDE
+# =============================================================================
+*.iml
+*.ipr
+*.iws
+.idea/
+# .vscode/ wird absichtlich nicht ignoriert — Launch-Configs sind im Repo nützlich
+
+# =============================================================================
+# Flutter / Dart / Pub
+# =============================================================================
+**/doc/api/
+**/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication / Obfuscation
+app.*.symbols
+app.*.map.json
+
+# =============================================================================
+# iOS
+# =============================================================================
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/.generated/
+**/ios/Runner.xcworkspace/xcuserdata/
+**/ios/Runner.xcodeproj/xcuserdata/
+**/ios/Runner.xcodeproj/project.xcworkspace/xcuserdata/
+
+# =============================================================================
+# Android
+# =============================================================================
+**/android/local.properties
+**/android/key.properties
+**/android/captures/
+**/android/.gradle/
+**/android/.idea/
+*.jks
+*.keystore
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# =============================================================================
+# Firebase-Konfiguration — ignoriert, weil dieses Repo öffentlich liegt.
+# =============================================================================
+# Enthält Project-IDs und API-Keys (eingeschränkt durch package_name + SHA-1,
+# aber wir vermeiden trotzdem, Firebase-Metadaten öffentlich zu machen).
+# Setup für neue Entwickler:
+#   1. Eigenes Firebase-Projekt anlegen
+#   2. `flutterfire configure` ausführen → erzeugt firebase_options.dart
+#   3. google-services.json aus Firebase Console nach android/app/ kopieren
+**/android/app/google-services.json
+**/ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+
+# =============================================================================
+# Linux (auto-generierte Plugin-Registrierung — wird beim `flutter pub get` neu erzeugt)
+# =============================================================================
+**/linux/flutter/ephemeral/
+**/linux/flutter/generated_plugin_registrant.cc
+**/linux/flutter/generated_plugin_registrant.h
+**/linux/flutter/generated_plugins.cmake
+
+# =============================================================================
+# Windows
+# =============================================================================
+**/windows/flutter/ephemeral/
+**/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugin_registrant.h
+**/windows/flutter/generated_plugins.cmake
+
+# =============================================================================
+# macOS
+# =============================================================================
+**/macos/Flutter/ephemeral/
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/macos/Pods/
+**/macos/Runner.xcworkspace/xcuserdata/
+**/macos/Runner.xcodeproj/xcuserdata/
+**/macos/Runner.xcodeproj/project.xcworkspace/xcuserdata/

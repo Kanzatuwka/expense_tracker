@@ -1,0 +1,217 @@
+import 'package:expense_tracker/core/widgets/category_icon.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../categories/models/category.dart';
+import '../../categories/providers/categories_provider.dart';
+import '../models/expense.dart';
+import '../providers/expenses_provider.dart';
+import 'expense_detail_screen.dart';
+
+class ExpensesListScreen extends ConsumerStatefulWidget {
+  const ExpensesListScreen({super.key});
+
+  @override
+  ConsumerState<ExpensesListScreen> createState() => _ExpensesListScreenState();
+}
+
+class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
+  // null bedeutet "Alle Kategorien anzeigen"
+  String? _selectedCategoryId;
+
+  @override
+  Widget build(BuildContext context) {
+    final expensesAsync = ref.watch(expensesProvider);
+    final categoriesAsync = ref.watch(categoriesProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Meine Ausgaben')),
+
+      body: expensesAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Fehler: $e')),
+        data: (expenses) {
+          // Gefilterte Liste nach ausgewählter Kategorie
+          final filtered = _selectedCategoryId == null
+              ? expenses
+              : expenses
+                    .where((e) => e.categoryId == _selectedCategoryId)
+                    .toList();
+
+          return Column(
+            children: [
+              // Gesamtbetrag der gefilterten Liste
+              _TotalSummary(expenses: filtered),
+              // Kategorie-Filter — aus Firestore geladen
+              categoriesAsync.when(
+                loading: () => const SizedBox(height: 48),
+                error: (e, _) => const SizedBox(height: 48),
+                data: (categories) => _CategoryFilter(
+                  categories: categories,
+                  selectedCategoryId: _selectedCategoryId,
+                  onCategorySelected: (id) {
+                    setState(() => _selectedCategoryId = id);
+                  },
+                ),
+              ),
+              // Ausgabenliste
+              Expanded(
+                child: filtered.isEmpty
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.receipt_long_outlined,
+                              size: 64,
+                              color: Colors.grey,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Keine Ausgaben vorhanden',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final expense = filtered[index];
+                          // Kategorie für diese Ausgabe finden
+                          final category = categoriesAsync.value
+                              ?.where((c) => c.id == expense.categoryId)
+                              .firstOrNull;
+                          return _ExpenseListTile(
+                            expense: expense,
+                            category: category,
+                          );
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+// Horizontale Filterleiste mit Kategorie-Chips
+class _CategoryFilter extends StatelessWidget {
+  final List<Category> categories;
+  final String? selectedCategoryId;
+  final ValueChanged<String?> onCategorySelected;
+
+  const _CategoryFilter({
+    required this.categories,
+    required this.selectedCategoryId,
+    required this.onCategorySelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 48,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        children: [
+          // "Alle" Chip
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              label: const Text('Alle'),
+              selected: selectedCategoryId == null,
+              onSelected: (_) => onCategorySelected(null),
+            ),
+          ),
+          // Ein Chip pro Kategorie
+          ...categories.map((category) {
+            return Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: FilterChip(
+                label: Text(category.name),
+                selected: selectedCategoryId == category.id,
+                onSelected: (_) => onCategorySelected(
+                  selectedCategoryId == category.id ? null : category.id,
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+// Gesamtbetrag der gefilterten Ausgaben
+class _TotalSummary extends StatelessWidget {
+  final List<Expense> expenses;
+
+  const _TotalSummary({required this.expenses});
+
+  @override
+  Widget build(BuildContext context) {
+    final total = expenses.fold(0.0, (sum, e) => sum + e.amount);
+
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Gesamtbetrag',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${total.toStringAsFixed(2)} €',
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Einzelne Ausgabe in der Liste
+class _ExpenseListTile extends StatelessWidget {
+  final Expense expense;
+  final Category? category;
+
+  const _ExpenseListTile({required this.expense, required this.category});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: CategoryAvatar(iconName: category?.icon),
+      title: Text(category?.name ?? 'Unbekannt'),
+      subtitle: Text(
+        expense.note.isNotEmpty
+            ? expense.note
+            : '${expense.date.day}.${expense.date.month}.${expense.date.year}',
+      ),
+      trailing: Text(
+        '${expense.amount.toStringAsFixed(2)} €',
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      ),
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) =>
+              ExpenseDetailScreen(expense: expense, category: category),
+        ),
+      ),
+    );
+  }
+}
