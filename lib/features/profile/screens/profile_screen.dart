@@ -1,5 +1,6 @@
 import 'package:expense_tracker/features/auth/models/auth_user.dart';
 import 'package:expense_tracker/features/auth/providers/auth_provider.dart';
+import 'package:expense_tracker/features/categories/screens/categories_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -52,7 +53,11 @@ class _ProfileBody extends StatelessWidget {
         _SettingsTile(
           icon: Icons.category_outlined,
           label: 'Kategorien verwalten',
-          onTap: () => _showComingSoon(context),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const CategoriesScreen(),
+            ),
+          ),
         ),
         _SettingsTile(
           icon: Icons.palette_outlined,

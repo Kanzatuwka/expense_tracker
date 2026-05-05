@@ -4,12 +4,23 @@ import 'package:flutter/material.dart';
 ///
 /// Single Source of Truth — wird von [iconDataForCategory] und allen UI-Komponenten
 /// gemeinsam genutzt. Neue Standardkategorien werden hier ergänzt.
+///
+/// Reihenfolge ist relevant: bestimmt die Anzeige-Reihenfolge im Icon-Picker.
 const Map<String, IconData> kCategoryIcons = <String, IconData>{
+  // Standardkategorien (siehe defaultCategoriesSeed in category_repository.dart)
   'restaurant': Icons.restaurant_outlined,
   'directions_car': Icons.directions_car_outlined,
   'favorite': Icons.favorite_outline,
   'movie': Icons.movie_outlined,
   'receipt': Icons.receipt_outlined,
+  // Zusätzliche Icons für benutzerdefinierte Kategorien
+  'shopping_cart': Icons.shopping_cart_outlined,
+  'home': Icons.home_outlined,
+  'school': Icons.school_outlined,
+  'flight': Icons.flight_outlined,
+  'fitness_center': Icons.fitness_center_outlined,
+  'savings': Icons.savings_outlined,
+  'card_giftcard': Icons.card_giftcard_outlined,
 };
 
 /// Fallback-Icon für unbekannte oder fehlende Icon-Namen.
