@@ -1,6 +1,8 @@
+import 'package:expense_tracker/core/navigation/main_screen.dart';
+import 'package:expense_tracker/core/theme/app_theme.dart';
+import 'package:expense_tracker/core/theme/theme_provider.dart';
 import 'package:expense_tracker/features/auth/providers/auth_provider.dart';
 import 'package:expense_tracker/features/auth/screens/login_screen.dart';
-import 'package:expense_tracker/core/navigation/main_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,10 +28,9 @@ class MyApp extends ConsumerWidget {
     return MaterialApp(
       title: 'Ausgaben Tracker',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ref.watch(themeModeProvider),
       // Je nach Authentifizierungsstatus den richtigen Screen anzeigen
       home: authState.when(
         data: (user) => user != null ? const MainScreen() : const LoginScreen(),

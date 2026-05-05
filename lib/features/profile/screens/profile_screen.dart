@@ -1,3 +1,4 @@
+import 'package:expense_tracker/core/theme/theme_provider.dart';
 import 'package:expense_tracker/features/auth/models/auth_user.dart';
 import 'package:expense_tracker/features/auth/providers/auth_provider.dart';
 import 'package:expense_tracker/features/categories/screens/categories_screen.dart';
@@ -59,12 +60,7 @@ class _ProfileBody extends StatelessWidget {
             ),
           ),
         ),
-        _SettingsTile(
-          icon: Icons.palette_outlined,
-          label: 'Theme',
-          trailing: 'System',
-          onTap: () => _showComingSoon(context),
-        ),
+        const _ThemeSettingsTile(),
         _SettingsTile(
           icon: Icons.language,
           label: 'Sprache',
@@ -140,6 +136,69 @@ class _ProfileHeader extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+/// Spezialisierter SettingsTile für die Theme-Auswahl.
+/// Zeigt den aktuellen Modus als trailing-Text und öffnet einen
+/// Auswahldialog mit RadioListTile-Optionen.
+class _ThemeSettingsTile extends ConsumerWidget {
+  const _ThemeSettingsTile();
+
+  static String _label(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'Hell';
+      case ThemeMode.dark:
+        return 'Dunkel';
+      case ThemeMode.system:
+        return 'System';
+    }
+  }
+
+  Future<void> _openSelector(BuildContext context, WidgetRef ref) async {
+    final current = ref.read(themeModeProvider);
+    final selected = await showDialog<ThemeMode>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: const Text('Theme auswählen'),
+        children: [
+          // Flutter v3.32+: groupValue/onChanged sind auf RadioListTile
+          // deprecated — der Group-State wird über einen RadioGroup-Ancestor verwaltet.
+          RadioGroup<ThemeMode>(
+            groupValue: current,
+            onChanged: (value) => Navigator.of(context).pop(value),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final mode in ThemeMode.values)
+                  RadioListTile<ThemeMode>(
+                    title: Text(_label(mode)),
+                    value: mode,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (selected != null && selected != current) {
+      await ref
+          .read(themeModeNotifierProvider.notifier)
+          .setThemeMode(selected);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final current = ref.watch(themeModeProvider);
+    return _SettingsTile(
+      icon: Icons.palette_outlined,
+      label: 'Theme',
+      trailing: _label(current),
+      onTap: () => _openSelector(context, ref),
     );
   }
 }

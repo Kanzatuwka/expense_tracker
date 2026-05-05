@@ -3,6 +3,7 @@ import 'package:expense_tracker/features/auth/data/firebase_auth_repository.dart
 import 'package:expense_tracker/features/auth/data/firestore_user_profile_repository.dart';
 import 'package:expense_tracker/features/auth/data/user_profile_repository.dart';
 import 'package:expense_tracker/features/auth/models/auth_user.dart';
+import 'package:expense_tracker/features/auth/models/user_profile.dart';
 import 'package:expense_tracker/features/categories/providers/categories_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,6 +22,26 @@ final userProfileRepositoryProvider = Provider<UserProfileRepository>((ref) {
 /// Nutzt [authRepositoryProvider] — keine direkte Firebase-Abhängigkeit hier.
 final authStateProvider = StreamProvider<AuthUser?>((ref) {
   return ref.watch(authRepositoryProvider).authStateChanges();
+});
+
+/// Reactive Stream des Benutzerprofils unter `users/{uid}`.
+///
+/// Folgt der Auth-Status:
+///   - Niemand angemeldet → liefert `null`
+///   - Angemeldet → liefert das aktuelle Profil (oder `null` falls noch
+///     nicht angelegt — das passiert während des ersten Sign-In Flows)
+final userProfileProvider = StreamProvider<UserProfile?>((ref) {
+  final authState = ref.watch(authStateProvider);
+  final repository = ref.watch(userProfileRepositoryProvider);
+
+  return authState.when(
+    data: (user) {
+      if (user == null) return Stream.value(null);
+      return repository.watchByUser(user.uid);
+    },
+    loading: () => Stream.value(null),
+    error: (_, _) => Stream.value(null),
+  );
 });
 
 /// Auth-Notifier: orchestriert Sign-In als Use Case.
