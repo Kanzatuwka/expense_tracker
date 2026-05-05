@@ -19,6 +19,28 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
   // null bedeutet "Alle Kategorien anzeigen"
   String? _selectedCategoryId;
 
+  // Bestätigungsdialog für Swipe-to-Delete
+  Future<bool?> _confirmDeleteDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Ausgabe löschen?'),
+        content: const Text('Diese Ausgabe wird unwiderruflich gelöscht.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Abbrechen'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Löschen'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final expensesAsync = ref.watch(expensesProvider);
@@ -82,9 +104,32 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
                           final category = categoriesAsync.value
                               ?.where((c) => c.id == expense.categoryId)
                               .firstOrNull;
-                          return _ExpenseListTile(
-                            expense: expense,
-                            category: category,
+                          return Dismissible(
+                            key: ValueKey(expense.id),
+                            direction: DismissDirection.endToStart,
+                            background: Container(
+                              alignment: Alignment.centerRight,
+                              color: Colors.red,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              child: const Icon(
+                                Icons.delete,
+                                color: Colors.white,
+                              ),
+                            ),
+                            confirmDismiss: (_) => _confirmDeleteDialog(
+                              context,
+                            ),
+                            onDismissed: (_) async {
+                              await ref
+                                  .read(expensesNotifierProvider.notifier)
+                                  .deleteExpense(expense.id);
+                            },
+                            child: _ExpenseListTile(
+                              expense: expense,
+                              category: category,
+                            ),
                           );
                         },
                       ),

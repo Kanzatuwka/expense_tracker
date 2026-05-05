@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../categories/models/category.dart';
 import '../models/expense.dart';
 import '../providers/expenses_provider.dart';
+import 'expense_form_screen.dart';
 
 class ExpenseDetailScreen extends ConsumerWidget {
   final Expense expense;
@@ -48,8 +49,24 @@ class ExpenseDetailScreen extends ConsumerWidget {
         title: const Text('Details'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: 'Bearbeiten',
+            onPressed: () async {
+              await Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ExpenseFormScreen(existing: expense),
+                ),
+              );
+              // Detail-Screen zeigt einen Snapshot aus dem Konstruktor — nach
+              // einer Bearbeitung wäre er stale. Daher zurück zur Liste, die
+              // den Stream-Provider beobachtet und automatisch aktualisiert.
+              if (context.mounted) Navigator.of(context).pop();
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.delete_outline),
             color: Colors.red,
+            tooltip: 'Löschen',
             onPressed: () => _confirmDelete(context, ref),
           ),
         ],

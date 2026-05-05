@@ -1,25 +1,48 @@
+import 'package:expense_tracker/features/categories/providers/categories_provider.dart';
+import 'package:expense_tracker/features/expenses/models/expense.dart';
+import 'package:expense_tracker/features/expenses/providers/expenses_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../categories/providers/categories_provider.dart';
-import '../providers/expenses_provider.dart';
+/// Formular für Ausgaben — funktioniert in zwei Modi:
+///   * `existing == null` → Neue Ausgabe anlegen
+///   * `existing != null` → Bestehende Ausgabe bearbeiten
+///
+/// Die ID, userId und createdAt der bestehenden Ausgabe bleiben unverändert
+/// — sie werden im Notifier/Repository nicht überschrieben.
+class ExpenseFormScreen extends ConsumerStatefulWidget {
+  final Expense? existing;
 
-class ExpenseCreateScreen extends ConsumerStatefulWidget {
-  const ExpenseCreateScreen({super.key});
+  const ExpenseFormScreen({super.key, this.existing});
 
   @override
-  ConsumerState<ExpenseCreateScreen> createState() =>
-      _ExpenseCreateScreenState();
+  ConsumerState<ExpenseFormScreen> createState() => _ExpenseFormScreenState();
 }
 
-class _ExpenseCreateScreenState extends ConsumerState<ExpenseCreateScreen> {
+class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
 
   String? _selectedCategoryId;
-  DateTime _selectedDate = DateTime.now();
+  late DateTime _selectedDate;
   bool _isLoading = false;
+
+  bool get _isEdit => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final existing = widget.existing;
+    if (existing != null) {
+      _amountController.text = existing.amount.toString();
+      _noteController.text = existing.note;
+      _selectedCategoryId = existing.categoryId;
+      _selectedDate = existing.date;
+    } else {
+      _selectedDate = DateTime.now();
+    }
+  }
 
   @override
   void dispose() {
@@ -28,7 +51,6 @@ class _ExpenseCreateScreenState extends ConsumerState<ExpenseCreateScreen> {
     super.dispose();
   }
 
-  // Datumsauswahl öffnen
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -41,7 +63,6 @@ class _ExpenseCreateScreenState extends ConsumerState<ExpenseCreateScreen> {
     }
   }
 
-  // Ausgabe speichern
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategoryId == null) {
@@ -55,16 +76,27 @@ class _ExpenseCreateScreenState extends ConsumerState<ExpenseCreateScreen> {
     }
 
     setState(() => _isLoading = true);
-
     try {
-      await ref
-          .read(expensesNotifierProvider.notifier)
-          .addExpense(
-            amount: double.parse(_amountController.text.trim()),
-            categoryId: _selectedCategoryId!,
-            date: _selectedDate,
-            note: _noteController.text.trim(),
-          );
+      final amount = double.parse(_amountController.text.trim());
+      final note = _noteController.text.trim();
+      final notifier = ref.read(expensesNotifierProvider.notifier);
+
+      if (_isEdit) {
+        await notifier.updateExpense(
+          id: widget.existing!.id,
+          amount: amount,
+          categoryId: _selectedCategoryId!,
+          date: _selectedDate,
+          note: note,
+        );
+      } else {
+        await notifier.addExpense(
+          amount: amount,
+          categoryId: _selectedCategoryId!,
+          date: _selectedDate,
+          note: note,
+        );
+      }
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
@@ -82,11 +114,12 @@ class _ExpenseCreateScreenState extends ConsumerState<ExpenseCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Kategorien aus Firestore laden
     final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Neue Ausgabe')),
+      appBar: AppBar(
+        title: Text(_isEdit ? 'Ausgabe bearbeiten' : 'Neue Ausgabe'),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -94,7 +127,6 @@ class _ExpenseCreateScreenState extends ConsumerState<ExpenseCreateScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Betrag Eingabefeld
               TextFormField(
                 controller: _amountController,
                 keyboardType: const TextInputType.numberWithOptions(
@@ -119,7 +151,6 @@ class _ExpenseCreateScreenState extends ConsumerState<ExpenseCreateScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              // Kategorie Dropdown — aus Firestore geladen
               categoriesAsync.when(
                 loading: () => const LinearProgressIndicator(),
                 error: (e, _) => Text('Fehler: $e'),
@@ -143,7 +174,6 @@ class _ExpenseCreateScreenState extends ConsumerState<ExpenseCreateScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              // Datumsauswahl
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.calendar_today_outlined),
@@ -158,7 +188,6 @@ class _ExpenseCreateScreenState extends ConsumerState<ExpenseCreateScreen> {
                 onTap: _pickDate,
               ),
               const SizedBox(height: 16),
-              // Notiz Eingabefeld
               TextFormField(
                 controller: _noteController,
                 maxLines: 3,
@@ -170,9 +199,11 @@ class _ExpenseCreateScreenState extends ConsumerState<ExpenseCreateScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              // Speichern Button
               FilledButton(
                 onPressed: _isLoading ? null : _save,
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
                 child: _isLoading
                     ? const SizedBox(
                         height: 20,
@@ -182,7 +213,7 @@ class _ExpenseCreateScreenState extends ConsumerState<ExpenseCreateScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text('Speichern'),
+                    : Text(_isEdit ? 'Aktualisieren' : 'Speichern'),
               ),
             ],
           ),

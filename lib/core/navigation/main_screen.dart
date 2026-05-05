@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:expense_tracker/features/charts/screens/chart_screen.dart';
-import 'package:expense_tracker/features/expenses/screens/expense_create_screen.dart';
+import 'package:expense_tracker/features/expenses/screens/expense_form_screen.dart';
 import 'package:expense_tracker/features/expenses/screens/expenses_list_screen.dart';
 import 'package:expense_tracker/features/profile/screens/profile_screen.dart';
 import 'package:expense_tracker/features/reports/screens/report_screen.dart';
@@ -28,11 +28,11 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     const ProfileScreen(),
   ];
 
-  // "+" Button öffnet ExpenseCreateScreen als Modal
+  // "+" Button öffnet das Formular im Create-Modus
   Future<void> _openCreateScreen() async {
     await Navigator.of(
       context,
-    ).push(MaterialPageRoute(builder: (_) => const ExpenseCreateScreen()));
+    ).push(MaterialPageRoute(builder: (_) => const ExpenseFormScreen()));
   }
 
   @override
