@@ -1,5 +1,6 @@
 import 'package:expense_tracker/features/categories/providers/categories_provider.dart';
 import 'package:expense_tracker/features/categories/utils/category_display.dart';
+import 'package:expense_tracker/features/categorization/categorization_provider.dart';
 import 'package:expense_tracker/features/expenses/models/expense.dart';
 import 'package:expense_tracker/features/expenses/providers/expenses_provider.dart';
 import 'package:expense_tracker/l10n/generated/app_localizations.dart';
@@ -38,10 +39,21 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
     } else {
       _selectedDate = DateTime.now();
     }
+    _noteController.addListener(_onNoteChanged);
+  }
+
+  void _onNoteChanged() {
+    if (_selectedCategoryId != null) return;
+    final categories = ref.read(categoriesProvider).value;
+    if (categories == null) return;
+    final service = ref.read(categorizationServiceProvider);
+    final suggestion = service.suggestCategoryId(_noteController.text, categories);
+    if (suggestion != null) setState(() => _selectedCategoryId = suggestion);
   }
 
   @override
   void dispose() {
+    _noteController.removeListener(_onNoteChanged);
     _amountController.dispose();
     _noteController.dispose();
     super.dispose();
