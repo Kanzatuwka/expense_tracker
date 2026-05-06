@@ -139,7 +139,7 @@ abstract class AppLocalizations {
   /// No description provided for @navReports.
   ///
   /// In en, this message translates to:
-  /// **'Reports'**
+  /// **'Budget'**
   String get navReports;
 
   /// No description provided for @navMe.
@@ -603,6 +603,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No expenses this month'**
   String get noDataForMonth;
+
+  /// No description provided for @budgetsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Budgets'**
+  String get budgetsTitle;
+
+  /// No description provided for @setBudgetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set budget'**
+  String get setBudgetTitle;
+
+  /// No description provided for @editBudgetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit budget'**
+  String get editBudgetTitle;
+
+  /// No description provided for @monthlyLimitLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly limit (€)'**
+  String get monthlyLimitLabel;
+
+  /// No description provided for @noBudgetSet.
+  ///
+  /// In en, this message translates to:
+  /// **'No limit set'**
+  String get noBudgetSet;
 }
 
 class _AppLocalizationsDelegate

@@ -27,7 +27,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get navChart => 'Графік';
 
   @override
-  String get navReports => 'Звіти';
+  String get navReports => 'Бюджет';
 
   @override
   String get navMe => 'Я';
@@ -266,4 +266,19 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get noDataForMonth => 'Немає витрат за цей місяць';
+
+  @override
+  String get budgetsTitle => 'Бюджети';
+
+  @override
+  String get setBudgetTitle => 'Встановити бюджет';
+
+  @override
+  String get editBudgetTitle => 'Редагувати бюджет';
+
+  @override
+  String get monthlyLimitLabel => 'Місячний ліміт (€)';
+
+  @override
+  String get noBudgetSet => 'Ліміт не встановлено';
 }

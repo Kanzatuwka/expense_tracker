@@ -9,7 +9,7 @@
 
   "navRecords": "Записи",
   "navChart": "Графік",
-  "navReports": "Звіти",
+  "navReports": "Бюджет",
   "navMe": "Я",
 
   "profileTitle": "Профіль",
@@ -95,5 +95,11 @@
   "topCategoriesSection": "Топ категорій",
   "dailyAvgLabel": "Середнє/день",
   "vsLastMonth": "vs. попер. місяць",
-  "noDataForMonth": "Немає витрат за цей місяць"
+  "noDataForMonth": "Немає витрат за цей місяць",
+
+  "budgetsTitle": "Бюджети",
+  "setBudgetTitle": "Встановити бюджет",
+  "editBudgetTitle": "Редагувати бюджет",
+  "monthlyLimitLabel": "Місячний ліміт (€)",
+  "noBudgetSet": "Ліміт не встановлено"
 }

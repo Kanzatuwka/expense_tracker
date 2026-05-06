@@ -9,7 +9,7 @@
 
   "navRecords": "Records",
   "navChart": "Chart",
-  "navReports": "Reports",
+  "navReports": "Budget",
   "navMe": "Me",
 
   "profileTitle": "Profil",
@@ -95,5 +95,11 @@
   "topCategoriesSection": "Top-Kategorien",
   "dailyAvgLabel": "Ø pro Tag",
   "vsLastMonth": "vs. Vormonat",
-  "noDataForMonth": "Keine Ausgaben in diesem Monat"
+  "noDataForMonth": "Keine Ausgaben in diesem Monat",
+
+  "budgetsTitle": "Budgets",
+  "setBudgetTitle": "Budget festlegen",
+  "editBudgetTitle": "Budget bearbeiten",
+  "monthlyLimitLabel": "Monatslimit (€)",
+  "noBudgetSet": "Kein Limit gesetzt"
 }

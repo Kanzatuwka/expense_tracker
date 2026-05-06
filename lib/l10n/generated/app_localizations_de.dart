@@ -28,7 +28,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get navChart => 'Chart';
 
   @override
-  String get navReports => 'Reports';
+  String get navReports => 'Budget';
 
   @override
   String get navMe => 'Me';
@@ -267,4 +267,19 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get noDataForMonth => 'Keine Ausgaben in diesem Monat';
+
+  @override
+  String get budgetsTitle => 'Budgets';
+
+  @override
+  String get setBudgetTitle => 'Budget festlegen';
+
+  @override
+  String get editBudgetTitle => 'Budget bearbeiten';
+
+  @override
+  String get monthlyLimitLabel => 'Monatslimit (€)';
+
+  @override
+  String get noBudgetSet => 'Kein Limit gesetzt';
 }

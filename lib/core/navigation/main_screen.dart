@@ -6,7 +6,7 @@ import 'package:expense_tracker/features/charts/screens/chart_screen.dart';
 import 'package:expense_tracker/features/expenses/screens/expense_form_screen.dart';
 import 'package:expense_tracker/features/expenses/screens/expenses_list_screen.dart';
 import 'package:expense_tracker/features/profile/screens/profile_screen.dart';
-import 'package:expense_tracker/features/reports/screens/report_screen.dart';
+import 'package:expense_tracker/features/budgets/screens/budget_screen.dart';
 
 class MainScreen extends ConsumerStatefulWidget {
   const MainScreen({super.key});
@@ -22,7 +22,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     const ExpensesListScreen(),
     const ChartScreen(),
     const SizedBox(),
-    const ReportScreen(),
+    const BudgetScreen(),
     const ProfileScreen(),
   ];
 
@@ -63,7 +63,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             ),
             const SizedBox(width: 48),
             _NavItem(
-              icon: Icons.bar_chart_outlined,
+              icon: Icons.account_balance_wallet_outlined,
               label: l10n.navReports,
               index: 3,
               currentIndex: _currentIndex,
