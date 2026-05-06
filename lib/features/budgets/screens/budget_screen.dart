@@ -12,6 +12,22 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+// ─── Data class for the monthly summary dialog ───────────────────────────────
+
+class _SummaryItem {
+  final Category category;
+  final double limit;
+  final double spent;
+
+  const _SummaryItem({
+    required this.category,
+    required this.limit,
+    required this.spent,
+  });
+}
+
+// ─── Screen ──────────────────────────────────────────────────────────────────
+
 class BudgetScreen extends ConsumerStatefulWidget {
   const BudgetScreen({super.key});
 
@@ -43,7 +59,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
           if (budgets.isNotEmpty) {
-            _showMonthlySummary(context, l10n);
+            _showMonthlySummary(l10n);
           } else {
             ref.read(budgetSummaryNotifierProvider.notifier).markSummaryShown();
           }
@@ -121,14 +137,32 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
     );
   }
 
-  void _showMonthlySummary(BuildContext context, AppLocalizations l10n) {
+  // Uses `this.context` (State.context) so there is no stale BuildContext
+  // parameter captured across the await gap.
+  Future<void> _showMonthlySummary(AppLocalizations l10n) async {
     final expenses = ref.read(expensesProvider).value ?? [];
-    final budgets = ref.read(budgetsProvider).value ?? [];
+    final currentBudgets = ref.read(budgetsProvider).value ?? [];
     final categories = ref.read(categoriesProvider).value ?? [];
 
     final now = DateTime.now();
     final prevYear = now.month == 1 ? now.year - 1 : now.year;
     final prevMonth = now.month == 1 ? 12 : now.month - 1;
+
+    // Load the limits that were actually in effect last month.
+    final userId = ref.read(authRepositoryProvider).currentUserId;
+    Map<String, double> historicalLimits = {};
+    if (userId != null) {
+      historicalLimits = await ref
+          .read(budgetRepositoryProvider)
+          .getMonthlySnapshot(userId, prevYear, prevMonth);
+    }
+
+    // Prefer historical limit; fall back to current limit for categories
+    // whose budget was never explicitly changed (no snapshot written yet).
+    final knownCategoryIds = {
+      ...currentBudgets.map((b) => b.categoryId),
+      ...historicalLimits.keys,
+    };
 
     final prevMonthSpending = <String, double>{};
     for (final expense in expenses) {
@@ -138,13 +172,28 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
       }
     }
 
+    final summaryItems = knownCategoryIds
+        .map((id) {
+          final category = categories.where((c) => c.id == id).firstOrNull;
+          if (category == null) return null;
+          final limit = historicalLimits[id] ??
+              currentBudgets.where((b) => b.categoryId == id).firstOrNull?.amount;
+          if (limit == null) return null;
+          return _SummaryItem(
+            category: category,
+            limit: limit,
+            spent: prevMonthSpending[id] ?? 0,
+          );
+        })
+        .nonNulls
+        .toList();
+
+    if (!mounted) return;
     showDialog<void>(
       context: context,
       builder: (_) => _BudgetSummaryDialog(
         l10n: l10n,
-        budgets: budgets,
-        categories: categories,
-        prevMonthSpending: prevMonthSpending,
+        items: summaryItems,
         prevYear: prevYear,
         prevMonth: prevMonth,
         onClose: () =>
@@ -258,18 +307,14 @@ class _BudgetDialogState extends State<_BudgetDialog> {
 
 class _BudgetSummaryDialog extends StatelessWidget {
   final AppLocalizations l10n;
-  final List<Budget> budgets;
-  final List<Category> categories;
-  final Map<String, double> prevMonthSpending;
+  final List<_SummaryItem> items;
   final int prevYear;
   final int prevMonth;
   final VoidCallback onClose;
 
   const _BudgetSummaryDialog({
     required this.l10n,
-    required this.budgets,
-    required this.categories,
-    required this.prevMonthSpending,
+    required this.items,
     required this.prevYear,
     required this.prevMonth,
     required this.onClose,
@@ -279,67 +324,63 @@ class _BudgetSummaryDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toString();
-    final prevDate = DateTime(prevYear, prevMonth);
-    final prevMonthName = DateFormat('LLLL y', locale).format(prevDate);
+    final prevMonthName =
+        DateFormat('LLLL y', locale).format(DateTime(prevYear, prevMonth));
     final currentMonthName =
         DateFormat('LLLL y', locale).format(DateTime.now());
 
-    final rows = budgets
-        .map((budget) {
-          final category =
-              categories.where((c) => c.id == budget.categoryId).firstOrNull;
-          if (category == null) return null;
-          final spent = prevMonthSpending[budget.categoryId] ?? 0.0;
-          final progress = (spent / budget.amount).clamp(0.0, 1.0);
-          final exceeded = spent > budget.amount;
+    final rows = items.map((item) {
+      final progress = (item.spent / item.limit).clamp(0.0, 1.0);
+      final exceeded = item.spent > item.limit;
+      final progressColor = exceeded
+          ? Colors.red.shade600
+          : progress >= 0.75
+          ? Colors.orange.shade600
+          : Colors.green.shade600;
 
-          final progressColor = exceeded
-              ? Colors.red.shade600
-              : progress >= 0.75
-              ? Colors.orange.shade600
-              : Colors.green.shade600;
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    CategoryAvatar(iconName: category.icon, size: 18),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        localizedCategoryName(context, category),
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                    Icon(
-                      exceeded ? Icons.warning_amber_rounded : Icons.check_circle_outline,
-                      size: 18,
-                      color: exceeded ? Colors.red.shade600 : Colors.green.shade600,
-                    ),
-                  ],
+                CategoryAvatar(iconName: item.category.icon, size: 18),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    localizedCategoryName(context, item.category),
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
                 ),
-                const SizedBox(height: 6),
-                LinearProgressIndicator(
-                  value: progress,
-                  color: progressColor,
-                  backgroundColor: scheme.surfaceContainerHighest,
-                  minHeight: 6,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${spent.toStringAsFixed(2)} / ${budget.amount.toStringAsFixed(2)} €',
-                  style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                Icon(
+                  exceeded
+                      ? Icons.warning_amber_rounded
+                      : Icons.check_circle_outline,
+                  size: 18,
+                  color: exceeded
+                      ? Colors.red.shade600
+                      : Colors.green.shade600,
                 ),
               ],
             ),
-          );
-        })
-        .nonNulls
-        .toList();
+            const SizedBox(height: 6),
+            LinearProgressIndicator(
+              value: progress,
+              color: progressColor,
+              backgroundColor: scheme.surfaceContainerHighest,
+              minHeight: 6,
+              borderRadius: BorderRadius.circular(3),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${item.spent.toStringAsFixed(2)} / ${item.limit.toStringAsFixed(2)} €',
+              style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+            ),
+          ],
+        ),
+      );
+    }).toList();
 
     return AlertDialog(
       title: Text(l10n.budgetSummaryTitle),
@@ -413,7 +454,8 @@ class _BudgetRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final hasBudget = budget != null;
-    final progress = hasBudget ? (spent / budget!.amount).clamp(0.0, 1.0) : 0.0;
+    final progress =
+        hasBudget ? (spent / budget!.amount).clamp(0.0, 1.0) : 0.0;
 
     Color progressColor;
     if (!hasBudget) {
