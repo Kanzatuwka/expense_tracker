@@ -6,8 +6,7 @@ according to Clean Architecture principles with strict separation between
 domain, data, and presentation, and a test suite that runs entirely in pure
 Dart with no Firebase initialization required.
 
-**Status:** v1 (core CRUD + auth) complete · **45 tests passing** ·
-v2 features in progress.
+**Status:** v2 complete · 104 tests (102 passing) · v2+ features planned.
 
 ---
 
@@ -17,7 +16,9 @@ v2 features in progress.
 - **Riverpod 3** — state management (Notifier + StreamProvider)
 - **Firebase Auth** — Google OAuth sign-in
 - **Cloud Firestore** — real-time data, per-user security rules
-- **flutter_test** — unit tests via `ProviderContainer` with provider overrides
+- **fl_chart** — pie chart + bar chart
+- **flutter_localizations + intl** — de / en / uk
+- **flutter_test** — unit and widget tests via `ProviderContainer` with provider overrides
 
 ---
 
@@ -26,7 +27,7 @@ v2 features in progress.
 The codebase follows Clean Architecture's dependency rule: **inner layers
 know nothing about outer layers**. Concretely:
 
-- **Domain entities** (`Expense`, `Category`, `AuthUser`, …) are pure Dart
+- **Domain entities** (`Expense`, `Category`, `Budget`, `AuthUser`, …) are pure Dart
   classes. They have no Firebase imports — they don't know Firestore exists.
 - **Repository interfaces** declare what the application needs from a data
   source. They live alongside the entities they operate on.
@@ -47,8 +48,8 @@ channels, no widget tree.
 
 | Layer | Examples | Location |
 |---|---|---|
-| Domain | `Expense`, `Category`, `AuthUser`, `AuthException` | `lib/features/*/models/` |
-| Data (interfaces) | `ExpenseRepository`, `CategoryRepository`, `AuthRepository`, `UserProfileRepository` | `lib/features/*/data/*_repository.dart` |
+| Domain | `Expense`, `Category`, `Budget`, `AuthUser`, `AuthException` | `lib/features/*/models/` |
+| Data (interfaces) | `ExpenseRepository`, `CategoryRepository`, `BudgetRepository`, `AuthRepository`, `UserProfileRepository` | `lib/features/*/data/*_repository.dart` |
 | Data (Firestore impls) | `FirestoreExpenseRepository`, `FirebaseAuthRepository`, … | `lib/features/*/data/firestore_*_repository.dart` |
 | Presentation | Notifiers + StreamProviders | `lib/features/*/providers/` |
 | UI | Screens + shared widgets | `lib/features/*/screens/`, `lib/core/widgets/` |
@@ -60,30 +61,30 @@ channels, no widget tree.
 ```
 lib/
   core/
-    navigation/main_screen.dart        — bottom-nav shell + central FAB
-    widgets/category_icon.dart          — shared icon lookup + CategoryAvatar
+    l10n/locale_provider.dart          — Firestore-persisted locale
+    navigation/main_screen.dart        — BottomAppBar + IndexedStack + FAB
+    theme/app_theme.dart               — Material 3 theme definitions
+    theme/theme_provider.dart          — Firestore-persisted ThemeMode
+    widgets/category_icon.dart         — shared icon lookup + CategoryAvatar
   features/
-    auth/                               — Google sign-in
-      data/                             — AuthRepository, UserProfileRepository
-      models/                           — AuthUser, AuthException (pure Dart)
-      providers/                        — AuthNotifier (orchestrates sign-in)
-      screens/                          — LoginScreen
-    expenses/                           — expense CRUD
-      data/                             — ExpenseRepository + Firestore impl
-      models/expense.dart               — pure Dart entity
-      providers/                        — ExpensesNotifier + StreamProvider
-      screens/                          — list / detail / create
-    categories/                         — category management
-    charts/                             — placeholder (v2)
-    reports/                            — placeholder (v2)
-    profile/                            — placeholder (v2)
+    auth/                              — Google sign-in + user profile
+    budgets/                           — monthly budget limits + summary
+    categories/                        — category management
+    categorization/                    — rule-based auto-categorization
+    charts/                            — pie + bar chart
+    expenses/                          — expense CRUD
+    profile/                           — user settings
+    reports/                           — monthly report (not in nav)
+  l10n/
+    app_{de,en,uk}.arb                 — translation strings
+    generated/                         — flutter gen-l10n output
   main.dart
-  firebase_options.dart                  — gitignored (see Setup)
+  firebase_options.dart                — gitignored (see Setup)
 
 test/
-  core/widgets/                          — icon mapping tests
-  fakes/                                 — in-memory repository implementations
-  features/                              — model / repository / notifier tests
+  core/widgets/                        — icon mapping tests
+  fakes/                               — in-memory repository implementations
+  features/                            — model / repository / notifier / screen tests
 ```
 
 ---
@@ -103,8 +104,8 @@ project metadata. To run locally, configure your own Firebase project:
 
 ```bash
 # 1. Clone
-git clone https://github.com/<your-username>/expense-tracker.git
-cd expense-tracker
+git clone https://github.com/Kanzatuwka/expense_tracker.git
+cd expense_tracker
 
 # 2. Install dependencies
 flutter pub get
@@ -129,13 +130,21 @@ On the first Google sign-in the app will automatically:
 
 ```
 users/{userId}
-  subscriptionStatus:  'free' | 'premium'
-  preferredLanguage:   'de' | 'en' | 'uk'
-  preferredTheme:      'light' | 'dark' | 'system'
-  createdAt:           Timestamp
+  subscriptionStatus:        'free' | 'premium'
+  preferredLanguage:         'de' | 'en' | 'uk'
+  preferredTheme:            'light' | 'dark' | 'system'
+  lastBudgetSummaryYear:     int?      (tracks monthly summary display)
+  lastBudgetSummaryMonth:    int?
+  createdAt:                 Timestamp
 
 users/{userId}/categories/{categoryId}
   name, icon, isCustom, isDefault, createdAt
+
+users/{userId}/budgets/{categoryId}     ← doc ID = categoryId
+  amount:  double                       (monthly limit in €)
+
+users/{userId}/budgetMonths/{YYYY-MM}   ← e.g. "2026-04"
+  budgets: {categoryId: amount}         (snapshot of limits active that month)
 
 expenses/{expenseId}
   userId, categoryId, amount, date, note, createdAt
@@ -143,13 +152,19 @@ expenses/{expenseId}
 
 ### Firestore security rules
 
-```
+```js
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
       match /categories/{categoryId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      match /budgets/{budgetId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      match /budgetMonths/{monthId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
@@ -173,7 +188,7 @@ service cloud.firestore {
 flutter test
 ```
 
-45 tests covering:
+104 tests covering:
 
 - **Model parsing** including backward compatibility with the legacy
   `category` field on older expense documents
@@ -184,33 +199,81 @@ flutter test
 - **Contract tests** (e.g. every seed icon name has a matching entry in
   `kCategoryIcons` so the UI never silently shows a fallback for a default
   category)
+- **Widget tests** for expense list, expense form (create + edit), and
+  profile screen
+
+---
+
+## Implemented features
+
+### Authentication
+- Google OAuth, `authStateProvider` (StreamProvider)
+- On first login: create `users/{uid}` document + seed 5 default categories
+- Automatic navigation via auth stream
+
+### Expenses
+- Full CRUD: create, edit (`ExpenseFormScreen` for both modes), delete
+- `ExpensesListScreen`: total amount, category filter, month navigation,
+  swipe-to-delete
+- `ExpenseDetailScreen`: detail view with edit / delete actions
+
+### Categories
+- 5 default categories: Essen, Transport, Gesundheit, Freizeit, Sonstiges
+- `CategoriesScreen`: list (default + custom), create / delete custom
+- `localizedCategoryName()` — localized names for default categories in
+  all three languages
+
+### Navigation
+- `BottomAppBar` with 4 tabs + central FAB: Records | Chart | + | Budget | Me
+- `IndexedStack` preserves state on tab switch
+
+### Profile
+- Display name, photo, email
+- Theme selector (light / dark / system) — persisted in Firestore
+- Language selector (de / en / uk) — persisted in Firestore
+- Manage categories shortcut, sign-out with confirmation dialog
+
+### Theming
+- Light / Dark / System via `ThemeMode`, persisted per user in Firestore
+
+### Localization
+- German / English / Ukrainian via `flutter_localizations` + `intl`
+- Generated via `flutter gen-l10n` (`l10n.yaml`)
+- `DateFormat('LLLL y', locale)` for nominative month names (fixes Ukrainian)
+
+### Categorization
+- `CategorizationService` — abstract interface (DIP)
+- `RuleBasedCategorizationService` — v1, keyword-based, unit-tested
+- Suggested category updates live as the user types the note
+
+### Charts
+- `ChartScreen`: PieChart (spending by category) + BarChart (last 6 months)
+- Month navigation with prev / next arrows
+
+### Budgets
+- Per-category monthly limits: set, edit, delete
+- `LinearProgressIndicator` color-coded: green (<75%), orange (75–99%), red (≥100%)
+- **In-app budget warnings**: SnackBar on expense save — orange at ≥75%,
+  red when exceeded; edit mode subtracts the old amount before computing
+  the new total
+- **Monthly summary dialog**: shown on first Budget-tab visit of a new month;
+  displays previous month's limit vs. actual spending per category with
+  progress bars
+- **Historical limit snapshots** (`budgetMonths/{YYYY-MM}`): written on every
+  setBudget / deleteBudget so the summary always shows the limits that were
+  active last month, not the current ones
 
 ---
 
 ## Roadmap
 
-### Implemented (v1)
+### v2+ — planned (do not pre-build)
 
-- Google sign-in with auto user-profile + default-categories seeding
-- Expense CRUD with category filter and real-time Firestore streams
-- Bottom-nav shell with central FAB
-
-### v2 — in progress
-
-- Profile screen (display name, photo, sign-out, settings)
-- Categories screen (list / create custom / delete)
-- Expense edit screen + swipe-to-delete on the list
-- Theming (light / dark / system, persisted in Firestore)
-- Localization: de / en / uk via `flutter_localizations` + `.arb`
-
-### v2+ — planned
-
-- `CategorizationService` interface with two implementations:
-  - keyword-based (free, v1)
-  - Gemini API (premium, v2)
-- ChartScreen — pie chart by category, bar chart by month
-- ReportScreen — monthly summary, top categories, month-over-month diff
-- Premium tier via RevenueCat + ad-supported AI quota via AdMob for free tier
+- `EntitlementService` — feature access control (Free / Premium)
+- RevenueCat — subscription management
+- AdMob — rewarded ads for limited AI usage on free tier
+- Gemini API — AI-powered categorization (`CategorizationService` v2 impl)
+- Extended reports screen with premium analytics
 
 ---
 
