@@ -221,7 +221,8 @@ class _TotalSummary extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final total = expenses.fold(0.0, (sum, e) => sum + e.amount);
     final locale = Localizations.localeOf(context).toString();
-    final monthLabel = DateFormat('MMMM yyyy', locale).format(selectedMonth);
+    final raw = DateFormat('LLLL yyyy', locale).format(selectedMonth);
+    final monthLabel = raw[0].toUpperCase() + raw.substring(1);
     final now = DateTime.now();
     final isCurrentMonth =
         selectedMonth.year == now.year && selectedMonth.month == now.month;

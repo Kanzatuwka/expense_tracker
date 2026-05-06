@@ -86,7 +86,8 @@ class _ChartBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toString();
-    final monthLabel = DateFormat('MMMM yyyy', locale).format(selectedMonth);
+    final raw = DateFormat('LLLL yyyy', locale).format(selectedMonth);
+    final monthLabel = raw[0].toUpperCase() + raw.substring(1);
     final now = DateTime.now();
     final isCurrentMonth =
         selectedMonth.year == now.year && selectedMonth.month == now.month;
@@ -335,10 +336,12 @@ class _BarChartCard extends StatelessWidget {
                   if (idx < 0 || idx >= months.length) {
                     return const SizedBox.shrink();
                   }
+                  final abbr = DateFormat('LLL', locale).format(months[idx]);
+                  final label = abbr[0].toUpperCase() + abbr.substring(1);
                   return Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
-                      DateFormat('MMM', locale).format(months[idx]),
+                      label,
                       style: TextStyle(
                         fontSize: 10,
                         color: scheme.onSurfaceVariant,
