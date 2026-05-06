@@ -78,5 +78,11 @@
   "chooseIcon": "Виберіть іконку",
   "pleaseSelectIcon": "Будь ласка, виберіть іконку",
   "pleaseEnterName": "Будь ласка, введіть назву",
-  "nameTooLong": "Назва має містити не більше 30 символів"
+  "nameTooLong": "Назва має містити не більше 30 символів",
+
+  "categoryFood": "Їжа",
+  "categoryTransport": "Транспорт",
+  "categoryHealth": "Здоров'я",
+  "categoryLeisure": "Дозвілля",
+  "categoryOther": "Інше"
 }

@@ -87,5 +87,11 @@
   "chooseIcon": "Choose icon",
   "pleaseSelectIcon": "Please select an icon",
   "pleaseEnterName": "Please enter a name",
-  "nameTooLong": "Name must be at most 30 characters"
+  "nameTooLong": "Name must be at most 30 characters",
+
+  "categoryFood": "Food",
+  "categoryTransport": "Transport",
+  "categoryHealth": "Health",
+  "categoryLeisure": "Leisure",
+  "categoryOther": "Other"
 }

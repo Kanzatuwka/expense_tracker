@@ -2,6 +2,7 @@ import 'package:expense_tracker/core/widgets/category_icon.dart';
 import 'package:expense_tracker/features/categories/models/category.dart';
 import 'package:expense_tracker/features/categories/providers/categories_provider.dart';
 import 'package:expense_tracker/features/categories/screens/category_create_screen.dart';
+import 'package:expense_tracker/features/categories/utils/category_display.dart';
 import 'package:expense_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,11 +23,9 @@ class CategoriesScreen extends ConsumerWidget {
         data: (categories) => _CategoriesList(categories: categories),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => const CategoryCreateScreen(),
-          ),
-        ),
+        onPressed: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const CategoryCreateScreen())),
         tooltip: l10n.newCategoryTooltip,
         child: const Icon(Icons.add),
       ),
@@ -123,7 +122,7 @@ class _CategoryTile extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: CategoryAvatar(iconName: category.icon),
-      title: Text(category.name),
+      title: Text(localizedCategoryName(context, category)),
       trailing: category.isCustom
           ? IconButton(
               icon: const Icon(Icons.delete_outline),

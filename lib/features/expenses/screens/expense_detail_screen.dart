@@ -1,4 +1,5 @@
 import 'package:expense_tracker/core/widgets/category_icon.dart';
+import 'package:expense_tracker/features/categories/utils/category_display.dart';
 import 'package:expense_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -93,7 +94,9 @@ class ExpenseDetailScreen extends ConsumerWidget {
                     _DetailRow(
                       icon: iconDataForCategory(category?.icon),
                       label: l10n.categoryLabel,
-                      value: category?.name ?? l10n.unknownCategory,
+                      value: category != null
+                          ? localizedCategoryName(context, category!)
+                          : l10n.unknownCategory,
                     ),
                     const Divider(),
                     _DetailRow(

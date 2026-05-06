@@ -1,4 +1,5 @@
 import 'package:expense_tracker/core/widgets/category_icon.dart';
+import 'package:expense_tracker/features/categories/utils/category_display.dart';
 import 'package:expense_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -169,7 +170,7 @@ class _CategoryFilter extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: FilterChip(
-                label: Text(category.name),
+                label: Text(localizedCategoryName(context, category)),
                 selected: selectedCategoryId == category.id,
                 onSelected: (_) => onCategorySelected(
                   selectedCategoryId == category.id ? null : category.id,
@@ -234,7 +235,11 @@ class _ExpenseListTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: CategoryAvatar(iconName: category?.icon),
-      title: Text(category?.name ?? l10n.unknownCategory),
+      title: Text(
+        category != null
+            ? localizedCategoryName(context, category!)
+            : l10n.unknownCategory,
+      ),
       subtitle: Text(
         expense.note.isNotEmpty
             ? expense.note

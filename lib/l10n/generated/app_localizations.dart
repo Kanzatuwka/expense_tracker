@@ -519,6 +519,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Name must be at most 30 characters'**
   String get nameTooLong;
+
+  /// No description provided for @categoryFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food'**
+  String get categoryFood;
+
+  /// No description provided for @categoryTransport.
+  ///
+  /// In en, this message translates to:
+  /// **'Transport'**
+  String get categoryTransport;
+
+  /// No description provided for @categoryHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get categoryHealth;
+
+  /// No description provided for @categoryLeisure.
+  ///
+  /// In en, this message translates to:
+  /// **'Leisure'**
+  String get categoryLeisure;
+
+  /// No description provided for @categoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get categoryOther;
 }
 
 class _AppLocalizationsDelegate

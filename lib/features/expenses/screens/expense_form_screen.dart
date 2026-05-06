@@ -1,4 +1,5 @@
 import 'package:expense_tracker/features/categories/providers/categories_provider.dart';
+import 'package:expense_tracker/features/categories/utils/category_display.dart';
 import 'package:expense_tracker/features/expenses/models/expense.dart';
 import 'package:expense_tracker/features/expenses/providers/expenses_provider.dart';
 import 'package:expense_tracker/l10n/generated/app_localizations.dart';
@@ -114,9 +115,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
     final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEdit ? l10n.editExpense : l10n.newExpense),
-      ),
+      appBar: AppBar(title: Text(_isEdit ? l10n.editExpense : l10n.newExpense)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
@@ -162,7 +161,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                   items: categories.map((category) {
                     return DropdownMenuItem(
                       value: category.id,
-                      child: Text(category.name),
+                      child: Text(localizedCategoryName(context, category)),
                     );
                   }).toList(),
                   onChanged: (value) {

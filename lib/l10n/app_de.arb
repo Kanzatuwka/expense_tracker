@@ -78,5 +78,11 @@
   "chooseIcon": "Icon auswählen",
   "pleaseSelectIcon": "Bitte ein Icon auswählen",
   "pleaseEnterName": "Bitte einen Namen eingeben",
-  "nameTooLong": "Name darf maximal 30 Zeichen lang sein"
+  "nameTooLong": "Name darf maximal 30 Zeichen lang sein",
+
+  "categoryFood": "Essen",
+  "categoryTransport": "Transport",
+  "categoryHealth": "Gesundheit",
+  "categoryLeisure": "Freizeit",
+  "categoryOther": "Sonstiges"
 }

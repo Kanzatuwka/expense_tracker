@@ -224,4 +224,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nameTooLong => 'Name must be at most 30 characters';
+
+  @override
+  String get categoryFood => 'Food';
+
+  @override
+  String get categoryTransport => 'Transport';
+
+  @override
+  String get categoryHealth => 'Health';
+
+  @override
+  String get categoryLeisure => 'Leisure';
+
+  @override
+  String get categoryOther => 'Other';
 }
