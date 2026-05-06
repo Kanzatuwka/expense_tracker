@@ -3,6 +3,7 @@ import 'package:expense_tracker/features/categories/utils/category_display.dart'
 import 'package:expense_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../categories/models/category.dart';
 import '../../categories/providers/categories_provider.dart';
@@ -19,6 +20,17 @@ class ExpensesListScreen extends ConsumerStatefulWidget {
 
 class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
   String? _selectedCategoryId;
+  DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
+
+  void _prevMonth() => setState(() {
+        _selectedMonth =
+            DateTime(_selectedMonth.year, _selectedMonth.month - 1);
+      });
+
+  void _nextMonth() => setState(() {
+        _selectedMonth =
+            DateTime(_selectedMonth.year, _selectedMonth.month + 1);
+      });
 
   Future<bool?> _confirmDeleteDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -55,15 +67,22 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(l10n.errorPrefix(e))),
         data: (expenses) {
-          final filtered = _selectedCategoryId == null
-              ? expenses
-              : expenses
-                    .where((e) => e.categoryId == _selectedCategoryId)
-                    .toList();
+          final filtered = expenses.where((e) {
+            final matchesMonth = e.date.year == _selectedMonth.year &&
+                e.date.month == _selectedMonth.month;
+            final matchesCategory = _selectedCategoryId == null ||
+                e.categoryId == _selectedCategoryId;
+            return matchesMonth && matchesCategory;
+          }).toList();
 
           return Column(
             children: [
-              _TotalSummary(expenses: filtered),
+              _TotalSummary(
+                expenses: filtered,
+                selectedMonth: _selectedMonth,
+                onPrevMonth: _prevMonth,
+                onNextMonth: _nextMonth,
+              ),
               categoriesAsync.when(
                 loading: () => const SizedBox(height: 48),
                 error: (e, _) => const SizedBox(height: 48),
@@ -186,36 +205,67 @@ class _CategoryFilter extends StatelessWidget {
 
 class _TotalSummary extends StatelessWidget {
   final List<Expense> expenses;
+  final DateTime selectedMonth;
+  final VoidCallback onPrevMonth;
+  final VoidCallback onNextMonth;
 
-  const _TotalSummary({required this.expenses});
+  const _TotalSummary({
+    required this.expenses,
+    required this.selectedMonth,
+    required this.onPrevMonth,
+    required this.onNextMonth,
+  });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final total = expenses.fold(0.0, (sum, e) => sum + e.amount);
+    final locale = Localizations.localeOf(context).toString();
+    final monthLabel = DateFormat('MMMM yyyy', locale).format(selectedMonth);
+    final now = DateTime.now();
+    final isCurrentMonth =
+        selectedMonth.year == now.year && selectedMonth.month == now.month;
+    final onContainer = Theme.of(context).colorScheme.onPrimaryContainer;
 
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         children: [
-          Text(
-            l10n.totalAmount,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: Icon(Icons.chevron_left, color: onContainer),
+                onPressed: onPrevMonth,
+              ),
+              Text(
+                monthLabel,
+                style: TextStyle(
+                  color: onContainer,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              isCurrentMonth
+                  ? const SizedBox(width: 48)
+                  : IconButton(
+                      icon: Icon(Icons.chevron_right, color: onContainer),
+                      onPressed: onNextMonth,
+                    ),
+            ],
           ),
-          const SizedBox(height: 8),
+          Text(l10n.totalAmount, style: TextStyle(color: onContainer)),
+          const SizedBox(height: 4),
           Text(
             '${total.toStringAsFixed(2)} €',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onPrimaryContainer,
+              color: onContainer,
             ),
           ),
         ],
