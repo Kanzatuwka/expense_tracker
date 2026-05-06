@@ -5,6 +5,7 @@ import 'package:expense_tracker/features/budgets/providers/budgets_provider.dart
 import 'package:expense_tracker/features/categories/models/category.dart';
 import 'package:expense_tracker/features/categories/providers/categories_provider.dart';
 import 'package:expense_tracker/features/categories/utils/category_display.dart';
+import 'package:expense_tracker/features/expenses/models/expense.dart';
 import 'package:expense_tracker/features/expenses/providers/expenses_provider.dart';
 import 'package:expense_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -46,20 +47,31 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
     final budgetsAsync = ref.watch(budgetsProvider);
     final expensesAsync = ref.watch(expensesProvider);
 
-    // Once both profile and budgets are loaded, check if summary should show.
+    // Fire only when both providers are in a definitive AsyncData state — not
+    // during the AsyncLoading transition that briefly retains the previous
+    // user's data (Riverpod keeps it for smooth UX during a stream rebuild).
+    // Using .value would return stale data from the signed-out user.
     final profile = profileAsync.value;
-    final budgets = budgetsAsync.value;
-    if (!_summaryCheckDone && profile != null && budgets != null) {
+    if (!_summaryCheckDone &&
+        profile != null &&
+        budgetsAsync is AsyncData &&
+        expensesAsync is AsyncData) {
       _summaryCheckDone = true;
       final now = DateTime.now();
       final needsShow =
           profile.lastBudgetSummaryYear != now.year ||
           profile.lastBudgetSummaryMonth != now.month;
       if (needsShow) {
+        final verifiedBudgets = budgetsAsync.requireValue;
+        final verifiedExpenses = expensesAsync.requireValue;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
-          if (budgets.isNotEmpty) {
-            _showMonthlySummary(l10n);
+          if (verifiedBudgets.isNotEmpty) {
+            _showMonthlySummary(
+              l10n,
+              expenses: verifiedExpenses,
+              currentBudgets: verifiedBudgets,
+            );
           } else {
             ref.read(budgetSummaryNotifierProvider.notifier).markSummaryShown();
           }
@@ -139,9 +151,13 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
 
   // Uses `this.context` (State.context) so there is no stale BuildContext
   // parameter captured across the await gap.
-  Future<void> _showMonthlySummary(AppLocalizations l10n) async {
-    final expenses = ref.read(expensesProvider).value ?? [];
-    final currentBudgets = ref.read(budgetsProvider).value ?? [];
+  // Callers pass pre-verified AsyncData values so we never read stale
+  // stream cache left behind after an account switch.
+  Future<void> _showMonthlySummary(
+    AppLocalizations l10n, {
+    required List<Expense> expenses,
+    required List<Budget> currentBudgets,
+  }) async {
     final categories = ref.read(categoriesProvider).value ?? [];
 
     final now = DateTime.now();
