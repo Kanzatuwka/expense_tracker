@@ -80,6 +80,10 @@
   "pleaseEnterName": "Bitte einen Namen eingeben",
   "nameTooLong": "Name darf maximal 30 Zeichen lang sein",
 
+  "chartsTitle": "Diagramme",
+  "byCategorySection": "Ausgaben nach Kategorie",
+  "monthlyTrendSection": "Monatlicher Verlauf",
+
   "categoryFood": "Essen",
   "categoryTransport": "Transport",
   "categoryHealth": "Gesundheit",

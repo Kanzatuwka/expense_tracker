@@ -226,6 +226,15 @@ class AppLocalizationsUk extends AppLocalizations {
   String get nameTooLong => 'Назва має містити не більше 30 символів';
 
   @override
+  String get chartsTitle => 'Діаграми';
+
+  @override
+  String get byCategorySection => 'Витрати за категорією';
+
+  @override
+  String get monthlyTrendSection => 'Динаміка по місяцях';
+
+  @override
   String get categoryFood => 'Їжа';
 
   @override

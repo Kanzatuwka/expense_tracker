@@ -20,6 +20,8 @@ dependencies:
   google_sign_in: ^6.2.0
   # Localization
   intl: any
+  # Charts
+  fl_chart: ^0.70.2
 
 dev_dependencies:
   flutter_test:

@@ -80,6 +80,10 @@
   "pleaseEnterName": "Будь ласка, введіть назву",
   "nameTooLong": "Назва має містити не більше 30 символів",
 
+  "chartsTitle": "Діаграми",
+  "byCategorySection": "Витрати за категорією",
+  "monthlyTrendSection": "Динаміка по місяцях",
+
   "categoryFood": "Їжа",
   "categoryTransport": "Транспорт",
   "categoryHealth": "Здоров'я",

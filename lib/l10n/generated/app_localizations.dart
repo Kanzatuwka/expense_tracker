@@ -520,6 +520,24 @@ abstract class AppLocalizations {
   /// **'Name must be at most 30 characters'**
   String get nameTooLong;
 
+  /// No description provided for @chartsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Charts'**
+  String get chartsTitle;
+
+  /// No description provided for @byCategorySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses by Category'**
+  String get byCategorySection;
+
+  /// No description provided for @monthlyTrendSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Trend'**
+  String get monthlyTrendSection;
+
   /// No description provided for @categoryFood.
   ///
   /// In en, this message translates to:

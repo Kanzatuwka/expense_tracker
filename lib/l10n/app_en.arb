@@ -89,6 +89,10 @@
   "pleaseEnterName": "Please enter a name",
   "nameTooLong": "Name must be at most 30 characters",
 
+  "chartsTitle": "Charts",
+  "byCategorySection": "Expenses by Category",
+  "monthlyTrendSection": "Monthly Trend",
+
   "categoryFood": "Food",
   "categoryTransport": "Transport",
   "categoryHealth": "Health",

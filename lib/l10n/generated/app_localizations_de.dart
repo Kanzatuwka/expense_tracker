@@ -227,6 +227,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get nameTooLong => 'Name darf maximal 30 Zeichen lang sein';
 
   @override
+  String get chartsTitle => 'Diagramme';
+
+  @override
+  String get byCategorySection => 'Ausgaben nach Kategorie';
+
+  @override
+  String get monthlyTrendSection => 'Monatlicher Verlauf';
+
+  @override
   String get categoryFood => 'Essen';
 
   @override
