@@ -132,5 +132,10 @@
       "month": { "type": "String" }
     }
   },
-  "close": "Close"
+  "close": "Close",
+
+  "dateToday": "Today",
+  "dateYesterday": "Yesterday",
+  "dateOther": "Other date",
+  "addDescriptionHint": "Add a description..."
 }

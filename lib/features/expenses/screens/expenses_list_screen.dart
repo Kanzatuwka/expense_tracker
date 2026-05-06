@@ -113,40 +113,10 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
                           ],
                         ),
                       )
-                    : ListView.builder(
-                        itemCount: filtered.length,
-                        itemBuilder: (context, index) {
-                          final expense = filtered[index];
-                          final category = categoriesAsync.value
-                              ?.where((c) => c.id == expense.categoryId)
-                              .firstOrNull;
-                          return Dismissible(
-                            key: ValueKey(expense.id),
-                            direction: DismissDirection.endToStart,
-                            background: Container(
-                              alignment: Alignment.centerRight,
-                              color: Colors.red,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                              ),
-                              child: const Icon(
-                                Icons.delete,
-                                color: Colors.white,
-                              ),
-                            ),
-                            confirmDismiss: (_) =>
-                                _confirmDeleteDialog(context),
-                            onDismissed: (_) async {
-                              await ref
-                                  .read(expensesNotifierProvider.notifier)
-                                  .deleteExpense(expense.id);
-                            },
-                            child: _ExpenseListTile(
-                              expense: expense,
-                              category: category,
-                            ),
-                          );
-                        },
+                    : _GroupedExpenseList(
+                        expenses: filtered,
+                        categoriesAsync: categoriesAsync,
+                        onConfirmDelete: _confirmDeleteDialog,
                       ),
               ),
             ],
@@ -275,6 +245,117 @@ class _TotalSummary extends StatelessWidget {
   }
 }
 
+// ─── Grouped list ────────────────────────────────────────────────────────────
+
+List<Object> _buildGroupedItems(List<Expense> expenses) {
+  final sorted = [...expenses]..sort((a, b) => b.date.compareTo(a.date));
+  final items = <Object>[];
+  DateTime? lastDay;
+  for (final expense in sorted) {
+    final day = DateTime(
+      expense.date.year,
+      expense.date.month,
+      expense.date.day,
+    );
+    if (lastDay == null || day != lastDay) {
+      items.add(day);
+      lastDay = day;
+    }
+    items.add(expense);
+  }
+  return items;
+}
+
+String _formatDayLabel(
+  BuildContext context,
+  DateTime day,
+  AppLocalizations l10n,
+) {
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final yesterday = today.subtract(const Duration(days: 1));
+  if (day == today) return l10n.dateToday;
+  if (day == yesterday) return l10n.dateYesterday;
+  final locale = Localizations.localeOf(context).toString();
+  return DateFormat('d MMMM yyyy', locale).format(day);
+}
+
+class _GroupedExpenseList extends ConsumerWidget {
+  final List<Expense> expenses;
+  final AsyncValue<List<Category>> categoriesAsync;
+  final Future<bool?> Function(BuildContext) onConfirmDelete;
+
+  const _GroupedExpenseList({
+    required this.expenses,
+    required this.categoriesAsync,
+    required this.onConfirmDelete,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final items = _buildGroupedItems(expenses);
+
+    return ListView.builder(
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+
+        if (item is DateTime) {
+          return _DayHeaderTile(label: _formatDayLabel(context, item, l10n));
+        }
+
+        final expense = item as Expense;
+        final category = categoriesAsync.value
+            ?.where((c) => c.id == expense.categoryId)
+            .firstOrNull;
+
+        return Dismissible(
+          key: ValueKey(expense.id),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            alignment: Alignment.centerRight,
+            color: Colors.red,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: const Icon(Icons.delete, color: Colors.white),
+          ),
+          confirmDismiss: (_) => onConfirmDelete(context),
+          onDismissed: (_) async {
+            await ref
+                .read(expensesNotifierProvider.notifier)
+                .deleteExpense(expense.id);
+          },
+          child: _ExpenseListTile(expense: expense, category: category),
+        );
+      },
+    );
+  }
+}
+
+// ─── Day header ───────────────────────────────────────────────────────────────
+
+class _DayHeaderTile extends StatelessWidget {
+  final String label;
+  const _DayHeaderTile({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Expense tile ─────────────────────────────────────────────────────────────
+
 class _ExpenseListTile extends StatelessWidget {
   final Expense expense;
   final Category? category;
@@ -291,11 +372,7 @@ class _ExpenseListTile extends StatelessWidget {
             ? localizedCategoryName(context, category!)
             : l10n.unknownCategory,
       ),
-      subtitle: Text(
-        expense.note.isNotEmpty
-            ? expense.note
-            : '${expense.date.day}.${expense.date.month}.${expense.date.year}',
-      ),
+      subtitle: expense.note.isNotEmpty ? Text(expense.note) : null,
       trailing: Text(
         '${expense.amount.toStringAsFixed(2)} €',
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),

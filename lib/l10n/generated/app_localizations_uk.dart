@@ -302,4 +302,16 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get close => 'Закрити';
+
+  @override
+  String get dateToday => 'Сьогодні';
+
+  @override
+  String get dateYesterday => 'Вчора';
+
+  @override
+  String get dateOther => 'Інша дата';
+
+  @override
+  String get addDescriptionHint => 'Додати опис...';
 }

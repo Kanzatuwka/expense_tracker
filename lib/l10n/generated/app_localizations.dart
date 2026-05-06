@@ -663,6 +663,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get close;
+
+  /// No description provided for @dateToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get dateToday;
+
+  /// No description provided for @dateYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get dateYesterday;
+
+  /// No description provided for @dateOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other date'**
+  String get dateOther;
+
+  /// No description provided for @addDescriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a description...'**
+  String get addDescriptionHint;
 }
 
 class _AppLocalizationsDelegate

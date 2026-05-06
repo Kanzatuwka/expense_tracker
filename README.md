@@ -213,8 +213,14 @@ flutter test
 
 ### Expenses
 - Full CRUD: create, edit (`ExpenseFormScreen` for both modes), delete
-- `ExpensesListScreen`: total amount, category filter, month navigation,
-  swipe-to-delete
+- **`ExpensesListScreen`**: total amount, category filter chips, month navigation
+  (prev / next arrows), swipe-to-delete with confirmation dialog
+- **Day-grouped list**: expenses grouped under "Today / Yesterday / 4 May 2026"
+  headers, sorted descending; note shown as subtitle only when non-empty
+- **`ExpenseFormScreen`** (redesigned): large centered amount input with quick-add
+  chips (+5 / +10 / +20 / +50), category icon grid (4 columns), `SegmentedButton`
+  date selector (Today / Yesterday / Other date with DatePicker), free-text note
+  field with live auto-categorization suggestion; Save disabled when amount = 0
 - `ExpenseDetailScreen`: detail view with edit / delete actions
 
 ### Categories

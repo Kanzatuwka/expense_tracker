@@ -31,9 +31,7 @@ class FirestoreExpenseRepository implements ExpenseRepository {
         .where('userId', isEqualTo: userId)
         .orderBy('date', descending: true)
         .snapshots()
-        .map(
-          (snapshot) => snapshot.docs.map(_expenseFromDoc).toList(),
-        );
+        .map((snapshot) => snapshot.docs.map(_expenseFromDoc).toList());
   }
 
   @override

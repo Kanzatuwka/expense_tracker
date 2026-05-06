@@ -107,5 +107,10 @@
   "budgetExceeded": "{category}: місячний бюджет перевищено",
   "budgetSummaryTitle": "Підсумок бюджету",
   "budgetLimitsRefreshed": "✓ Ліміти оновлено для {month}",
-  "close": "Закрити"
+  "close": "Закрити",
+
+  "dateToday": "Сьогодні",
+  "dateYesterday": "Вчора",
+  "dateOther": "Інша дата",
+  "addDescriptionHint": "Додати опис..."
 }

@@ -302,4 +302,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get close => 'Close';
+
+  @override
+  String get dateToday => 'Today';
+
+  @override
+  String get dateYesterday => 'Yesterday';
+
+  @override
+  String get dateOther => 'Other date';
+
+  @override
+  String get addDescriptionHint => 'Add a description...';
 }
