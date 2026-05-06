@@ -20,4 +20,11 @@ abstract class UserProfileRepository {
     required String userId,
     required String theme,
   });
+
+  /// Aktualisiert nur das `preferredLanguage`-Feld.
+  /// Andere Profilfelder bleiben unverändert.
+  Future<void> updateLanguage({
+    required String userId,
+    required String language,
+  });
 }

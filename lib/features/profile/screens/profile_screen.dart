@@ -1,7 +1,9 @@
+import 'package:expense_tracker/core/l10n/locale_provider.dart';
 import 'package:expense_tracker/core/theme/theme_provider.dart';
 import 'package:expense_tracker/features/auth/models/auth_user.dart';
 import 'package:expense_tracker/features/auth/providers/auth_provider.dart';
 import 'package:expense_tracker/features/categories/screens/categories_screen.dart';
+import 'package:expense_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,18 +12,17 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final authAsync = ref.watch(authStateProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
+      appBar: AppBar(title: Text(l10n.profileTitle)),
       body: authAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Fehler: $e')),
+        error: (e, _) => Center(child: Text(l10n.errorPrefix(e))),
         data: (user) {
-          // Sollte in der Praxis nicht eintreten — der ProfileScreen ist nur
-          // sichtbar, wenn der Benutzer angemeldet ist (siehe main.dart).
           if (user == null) {
-            return const Center(child: Text('Nicht angemeldet'));
+            return Center(child: Text(l10n.notSignedIn));
           }
           return _ProfileBody(user: user);
         },
@@ -35,17 +36,9 @@ class _ProfileBody extends StatelessWidget {
 
   const _ProfileBody({required this.user});
 
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Bald verfügbar'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       children: [
@@ -53,25 +46,25 @@ class _ProfileBody extends StatelessWidget {
         const Divider(height: 32),
         _SettingsTile(
           icon: Icons.category_outlined,
-          label: 'Kategorien verwalten',
+          label: l10n.manageCategories,
           onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => const CategoriesScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => const CategoriesScreen()),
           ),
         ),
         const _ThemeSettingsTile(),
-        _SettingsTile(
-          icon: Icons.language,
-          label: 'Sprache',
-          trailing: 'Deutsch',
-          onTap: () => _showComingSoon(context),
-        ),
+        const _LanguageSettingsTile(),
         _SettingsTile(
           icon: Icons.info_outline,
-          label: 'Über die App',
-          trailing: 'v0.1.0',
-          onTap: () => _showComingSoon(context),
+          label: l10n.aboutApp,
+          trailing: l10n.appVersion,
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.comingSoon),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          },
         ),
         const SizedBox(height: 32),
         const _SignOutButton(),
@@ -86,15 +79,15 @@ class _ProfileHeader extends StatelessWidget {
 
   const _ProfileHeader({required this.user});
 
-  // Erstes Zeichen aus displayName oder Email — als Fallback wenn kein Foto da ist.
-  String get _initial {
-    final source = user.displayName ?? user.email ?? '?';
+  String _initial(String fallback) {
+    final source = user.displayName ?? user.email ?? fallback;
     if (source.isEmpty) return '?';
     return source.characters.first.toUpperCase();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -110,7 +103,7 @@ class _ProfileHeader extends StatelessWidget {
                 : null,
             child: user.photoUrl == null
                 ? Text(
-                    _initial,
+                    _initial('?'),
                     style: textTheme.headlineMedium?.copyWith(
                       color: scheme.onPrimaryContainer,
                       fontWeight: FontWeight.bold,
@@ -120,7 +113,7 @@ class _ProfileHeader extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            user.displayName ?? 'Anonym',
+            user.displayName ?? l10n.anonymous,
             style: textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -140,32 +133,29 @@ class _ProfileHeader extends StatelessWidget {
   }
 }
 
-/// Spezialisierter SettingsTile für die Theme-Auswahl.
-/// Zeigt den aktuellen Modus als trailing-Text und öffnet einen
-/// Auswahldialog mit RadioListTile-Optionen.
 class _ThemeSettingsTile extends ConsumerWidget {
   const _ThemeSettingsTile();
 
-  static String _label(ThemeMode mode) {
+  static String _label(BuildContext context, ThemeMode mode) {
+    final l10n = AppLocalizations.of(context)!;
     switch (mode) {
       case ThemeMode.light:
-        return 'Hell';
+        return l10n.themeLight;
       case ThemeMode.dark:
-        return 'Dunkel';
+        return l10n.themeDark;
       case ThemeMode.system:
-        return 'System';
+        return l10n.themeSystem;
     }
   }
 
   Future<void> _openSelector(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final current = ref.read(themeModeProvider);
     final selected = await showDialog<ThemeMode>(
       context: context,
       builder: (context) => SimpleDialog(
-        title: const Text('Theme auswählen'),
+        title: Text(l10n.themeChoose),
         children: [
-          // Flutter v3.32+: groupValue/onChanged sind auf RadioListTile
-          // deprecated — der Group-State wird über einen RadioGroup-Ancestor verwaltet.
           RadioGroup<ThemeMode>(
             groupValue: current,
             onChanged: (value) => Navigator.of(context).pop(value),
@@ -174,7 +164,7 @@ class _ThemeSettingsTile extends ConsumerWidget {
               children: [
                 for (final mode in ThemeMode.values)
                   RadioListTile<ThemeMode>(
-                    title: Text(_label(mode)),
+                    title: Text(_label(context, mode)),
                     value: mode,
                   ),
               ],
@@ -193,11 +183,78 @@ class _ThemeSettingsTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final current = ref.watch(themeModeProvider);
     return _SettingsTile(
       icon: Icons.palette_outlined,
-      label: 'Theme',
-      trailing: _label(current),
+      label: l10n.themeLabel,
+      trailing: _label(context, current),
+      onTap: () => _openSelector(context, ref),
+    );
+  }
+}
+
+class _LanguageSettingsTile extends ConsumerWidget {
+  const _LanguageSettingsTile();
+
+  static String _label(BuildContext context, String code) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (code) {
+      case 'de':
+        return l10n.languageGerman;
+      case 'en':
+        return l10n.languageEnglish;
+      case 'uk':
+        return l10n.languageUkrainian;
+      default:
+        return code;
+    }
+  }
+
+  Future<void> _openSelector(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final currentLocale = ref.read(localeProvider);
+    final current = currentLocale?.languageCode ?? 'de';
+
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (context) => SimpleDialog(
+        title: Text(l10n.languageChoose),
+        children: [
+          RadioGroup<String>(
+            groupValue: current,
+            onChanged: (value) => Navigator.of(context).pop(value),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final code in supportedLanguageCodes)
+                  RadioListTile<String>(
+                    title: Text(_label(context, code)),
+                    value: code,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (selected != null && selected != current) {
+      await ref
+          .read(localeNotifierProvider.notifier)
+          .setLanguage(selected);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final current = ref.watch(localeProvider);
+    final code = current?.languageCode ?? 'de';
+    return _SettingsTile(
+      icon: Icons.language,
+      label: l10n.languageLabel,
+      trailing: _label(context, code),
       onTap: () => _openSelector(context, ref),
     );
   }
@@ -241,20 +298,21 @@ class _SignOutButton extends ConsumerWidget {
   const _SignOutButton();
 
   Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Abmelden?'),
-        content: const Text('Du wirst von der App abgemeldet.'),
+        title: Text(l10n.signOutQuestion),
+        content: Text(l10n.signOutDescription),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Abmelden'),
+            child: Text(l10n.signOut),
           ),
         ],
       ),
@@ -267,12 +325,13 @@ class _SignOutButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: OutlinedButton.icon(
         onPressed: () => _confirmSignOut(context, ref),
         icon: const Icon(Icons.logout),
-        label: const Text('Abmelden'),
+        label: Text(l10n.signOut),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),
           foregroundColor: Colors.red,

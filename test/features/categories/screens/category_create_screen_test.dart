@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../fakes/in_memory_auth_repository.dart';
 import '../../../fakes/in_memory_category_repository.dart';
+import '../../../helpers/localized_app.dart';
 
 Widget _buildApp({
   required InMemoryAuthRepository auth,
@@ -18,7 +19,7 @@ Widget _buildApp({
       authRepositoryProvider.overrideWithValue(auth),
       categoryRepositoryProvider.overrideWithValue(categories),
     ],
-    child: const MaterialApp(home: CategoryCreateScreen()),
+    child: localizedApp(const CategoryCreateScreen()),
   );
 }
 
@@ -94,8 +95,8 @@ void main() {
             authRepositoryProvider.overrideWithValue(auth),
             categoryRepositoryProvider.overrideWithValue(categories),
           ],
-          child: MaterialApp(
-            home: Builder(
+          child: localizedApp(
+            Builder(
               builder: (context) => Scaffold(
                 body: Center(
                   child: ElevatedButton(

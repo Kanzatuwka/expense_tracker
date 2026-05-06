@@ -1,3 +1,4 @@
+import 'package:expense_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,8 +15,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isLoading = false;
 
-  // Anmeldung mit Google OAuth
   Future<void> _signInWithGoogle() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() => _isLoading = true);
 
     try {
@@ -29,8 +30,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Anmeldung fehlgeschlagen. Bitte erneut versuchen'),
+          SnackBar(
+            content: Text(l10n.loginFailedGeneric),
             backgroundColor: Colors.red,
           ),
         );
@@ -42,6 +43,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: Center(
         child: Padding(
@@ -50,16 +53,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // App Icon
               Icon(
                 Icons.account_balance_wallet_outlined,
                 size: 80,
                 color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(height: 24),
-              // Titel
               Text(
-                'Ausgaben Tracker',
+                l10n.appTitle,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).colorScheme.primary,
@@ -67,16 +68,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              // Untertitel
               Text(
-                'Behalte deine Finanzen im Blick',
+                l10n.loginSubtitle,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.secondary,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
-              // Google Sign-In Button
               OutlinedButton.icon(
                 onPressed: _isLoading ? null : _signInWithGoogle,
                 icon: _isLoading
@@ -90,7 +89,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         height: 20,
                         width: 20,
                       ),
-                label: const Text('Mit Google anmelden'),
+                label: Text(l10n.loginWithGoogle),
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   side: BorderSide(

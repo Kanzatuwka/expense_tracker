@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../fakes/in_memory_auth_repository.dart';
 import '../../../fakes/in_memory_category_repository.dart';
 import '../../../fakes/in_memory_expense_repository.dart';
+import '../../../helpers/localized_app.dart';
 
 class _Fakes {
   final InMemoryAuthRepository auth;
@@ -35,7 +36,7 @@ Widget _buildApp(_Fakes fakes, {Expense? existing}) {
       categoryRepositoryProvider.overrideWithValue(fakes.categories),
       expenseRepositoryProvider.overrideWithValue(fakes.expenses),
     ],
-    child: MaterialApp(home: ExpenseFormScreen(existing: existing)),
+    child: localizedApp(ExpenseFormScreen(existing: existing)),
   );
 }
 
@@ -173,8 +174,8 @@ void main() {
               categoryRepositoryProvider.overrideWithValue(fakes.categories),
               expenseRepositoryProvider.overrideWithValue(fakes.expenses),
             ],
-            child: MaterialApp(
-              home: Builder(
+            child: localizedApp(
+              Builder(
                 builder: (context) => Scaffold(
                   body: Center(
                     child: ElevatedButton(

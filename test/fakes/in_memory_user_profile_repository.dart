@@ -71,5 +71,16 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
     _emit();
   }
 
+  @override
+  Future<void> updateLanguage({
+    required String userId,
+    required String language,
+  }) async {
+    final existing = _store[userId];
+    if (existing == null) return;
+    _store[userId] = existing.copyWith(preferredLanguage: language);
+    _emit();
+  }
+
   Future<void> dispose() => _changes.close();
 }

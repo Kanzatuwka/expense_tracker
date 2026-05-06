@@ -1,0 +1,91 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Expense Tracker",
+
+  "loginSubtitle": "Keep an eye on your finances",
+  "loginWithGoogle": "Sign in with Google",
+  "loginFailedGeneric": "Sign-in failed. Please try again",
+
+  "navRecords": "Records",
+  "navChart": "Chart",
+  "navReports": "Reports",
+  "navMe": "Me",
+
+  "profileTitle": "Profile",
+  "anonymous": "Anonymous",
+  "comingSoon": "Coming soon",
+  "manageCategories": "Manage categories",
+  "themeLabel": "Theme",
+  "themeChoose": "Choose theme",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System",
+  "languageLabel": "Language",
+  "languageChoose": "Choose language",
+  "languageGerman": "Deutsch",
+  "languageEnglish": "English",
+  "languageUkrainian": "Українська",
+  "aboutApp": "About the app",
+  "appVersion": "v0.1.0",
+  "signOut": "Sign out",
+  "signOutQuestion": "Sign out?",
+  "signOutDescription": "You will be signed out of the app.",
+  "cancel": "Cancel",
+  "notSignedIn": "Not signed in",
+
+  "expensesTitle": "My Expenses",
+  "filterAll": "All",
+  "totalAmount": "Total",
+  "noExpenses": "No expenses yet",
+  "unknownCategory": "Unknown",
+  "deleteExpenseQuestion": "Delete expense?",
+  "deleteExpenseDescription": "This expense will be permanently deleted.",
+  "delete": "Delete",
+
+  "newExpense": "New expense",
+  "editExpense": "Edit expense",
+  "save": "Save",
+  "update": "Update",
+  "amountLabel": "Amount (€)",
+  "categoryLabel": "Category",
+  "categoryHint": "Select a category",
+  "dateLabel": "Date",
+  "noteOptional": "Note (optional)",
+  "noteLabel": "Note",
+  "pleaseSelectCategory": "Please select a category",
+  "pleaseEnterAmount": "Please enter an amount",
+  "invalidAmount": "Invalid amount",
+  "amountMustBePositive": "Amount must be greater than 0",
+  "errorSaving": "Error saving: {error}",
+  "@errorSaving": {
+    "placeholders": { "error": { "type": "Object" } }
+  },
+  "errorPrefix": "Error: {error}",
+  "@errorPrefix": {
+    "placeholders": { "error": { "type": "Object" } }
+  },
+
+  "detailsTitle": "Details",
+  "editTooltip": "Edit",
+  "deleteTooltip": "Delete",
+
+  "categoriesTitle": "Categories",
+  "newCategoryTooltip": "New category",
+  "defaultCategoriesSection": "Default categories",
+  "customCategoriesSection": "Custom categories",
+  "noCategoriesYet": "No categories yet",
+  "tapPlusToCreate": "Tap + to create one",
+  "deleteCategoryQuestion": "Delete category?",
+  "deleteCategoryDescription": "\"{name}\" will be permanently deleted. Existing expenses in this category remain, but will no longer show a category name.",
+  "@deleteCategoryDescription": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+
+  "newCategoryTitle": "New category",
+  "nameLabel": "Name",
+  "chooseIcon": "Choose icon",
+  "pleaseSelectIcon": "Please select an icon",
+  "pleaseEnterName": "Please enter a name",
+  "nameTooLong": "Name must be at most 30 characters"
+}

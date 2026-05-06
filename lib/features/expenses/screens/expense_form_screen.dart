@@ -1,15 +1,10 @@
 import 'package:expense_tracker/features/categories/providers/categories_provider.dart';
 import 'package:expense_tracker/features/expenses/models/expense.dart';
 import 'package:expense_tracker/features/expenses/providers/expenses_provider.dart';
+import 'package:expense_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Formular für Ausgaben — funktioniert in zwei Modi:
-///   * `existing == null` → Neue Ausgabe anlegen
-///   * `existing != null` → Bestehende Ausgabe bearbeiten
-///
-/// Die ID, userId und createdAt der bestehenden Ausgabe bleiben unverändert
-/// — sie werden im Notifier/Repository nicht überschrieben.
 class ExpenseFormScreen extends ConsumerStatefulWidget {
   final Expense? existing;
 
@@ -64,11 +59,12 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
     if (_selectedCategoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bitte eine Kategorie auswählen'),
+        SnackBar(
+          content: Text(l10n.pleaseSelectCategory),
           backgroundColor: Colors.red,
         ),
       );
@@ -102,7 +98,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fehler beim Speichern: $e'),
+            content: Text(l10n.errorSaving(e)),
             backgroundColor: Colors.red,
           ),
         );
@@ -114,11 +110,12 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEdit ? 'Ausgabe bearbeiten' : 'Neue Ausgabe'),
+        title: Text(_isEdit ? l10n.editExpense : l10n.newExpense),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -132,20 +129,20 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: const InputDecoration(
-                  labelText: 'Betrag (€)',
-                  prefixIcon: Icon(Icons.euro),
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.amountLabel,
+                  prefixIcon: const Icon(Icons.euro),
+                  border: const OutlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Bitte Betrag eingeben';
+                    return l10n.pleaseEnterAmount;
                   }
                   if (double.tryParse(value) == null) {
-                    return 'Ungültiger Betrag';
+                    return l10n.invalidAmount;
                   }
                   if (double.parse(value) <= 0) {
-                    return 'Betrag muss größer als 0 sein';
+                    return l10n.amountMustBePositive;
                   }
                   return null;
                 },
@@ -153,15 +150,15 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
               const SizedBox(height: 16),
               categoriesAsync.when(
                 loading: () => const LinearProgressIndicator(),
-                error: (e, _) => Text('Fehler: $e'),
+                error: (e, _) => Text(l10n.errorPrefix(e)),
                 data: (categories) => DropdownButtonFormField<String>(
                   initialValue: _selectedCategoryId,
-                  decoration: const InputDecoration(
-                    labelText: 'Kategorie',
-                    prefixIcon: Icon(Icons.category_outlined),
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.categoryLabel,
+                    prefixIcon: const Icon(Icons.category_outlined),
+                    border: const OutlineInputBorder(),
                   ),
-                  hint: const Text('Kategorie auswählen'),
+                  hint: Text(l10n.categoryHint),
                   items: categories.map((category) {
                     return DropdownMenuItem(
                       value: category.id,
@@ -177,7 +174,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.calendar_today_outlined),
-                title: const Text('Datum'),
+                title: Text(l10n.dateLabel),
                 subtitle: Text(
                   '${_selectedDate.day}.${_selectedDate.month}.${_selectedDate.year}',
                 ),
@@ -191,10 +188,10 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
               TextFormField(
                 controller: _noteController,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Notiz (optional)',
-                  prefixIcon: Icon(Icons.note_outlined),
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.noteOptional,
+                  prefixIcon: const Icon(Icons.note_outlined),
+                  border: const OutlineInputBorder(),
                   alignLabelWithHint: true,
                 ),
               ),
@@ -213,7 +210,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                           color: Colors.white,
                         ),
                       )
-                    : Text(_isEdit ? 'Aktualisieren' : 'Speichern'),
+                    : Text(_isEdit ? l10n.update : l10n.save),
               ),
             ],
           ),

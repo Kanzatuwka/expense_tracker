@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../../fakes/in_memory_auth_repository.dart';
 import '../../../fakes/in_memory_category_repository.dart';
 import '../../../fakes/in_memory_expense_repository.dart';
+import '../../../helpers/localized_app.dart';
 
 void main() {
   group('ExpensesListScreen — Swipe-to-Delete', () {
@@ -48,7 +49,7 @@ void main() {
               categoryRepositoryProvider.overrideWithValue(categories),
               expenseRepositoryProvider.overrideWithValue(expenses),
             ],
-            child: const MaterialApp(home: ExpensesListScreen()),
+            child: localizedApp(const ExpensesListScreen()),
           ),
         );
         await tester.pumpAndSettle();
@@ -107,7 +108,7 @@ void main() {
               categoryRepositoryProvider.overrideWithValue(categories),
               expenseRepositoryProvider.overrideWithValue(expenses),
             ],
-            child: const MaterialApp(home: ExpensesListScreen()),
+            child: localizedApp(const ExpensesListScreen()),
           ),
         );
         await tester.pumpAndSettle();

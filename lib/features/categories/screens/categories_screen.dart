@@ -2,6 +2,7 @@ import 'package:expense_tracker/core/widgets/category_icon.dart';
 import 'package:expense_tracker/features/categories/models/category.dart';
 import 'package:expense_tracker/features/categories/providers/categories_provider.dart';
 import 'package:expense_tracker/features/categories/screens/category_create_screen.dart';
+import 'package:expense_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,13 +11,14 @@ class CategoriesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Kategorien')),
+      appBar: AppBar(title: Text(l10n.categoriesTitle)),
       body: categoriesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Fehler: $e')),
+        error: (e, _) => Center(child: Text(l10n.errorPrefix(e))),
         data: (categories) => _CategoriesList(categories: categories),
       ),
       floatingActionButton: FloatingActionButton(
@@ -25,7 +27,7 @@ class CategoriesScreen extends ConsumerWidget {
             builder: (_) => const CategoryCreateScreen(),
           ),
         ),
-        tooltip: 'Neue Kategorie',
+        tooltip: l10n.newCategoryTooltip,
         child: const Icon(Icons.add),
       ),
     );
@@ -39,22 +41,23 @@ class _CategoriesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (categories.isEmpty) {
-      return const _EmptyState();
+      return _EmptyState();
     }
 
     final defaults = categories.where((c) => c.isDefault).toList();
     final customs = categories.where((c) => c.isCustom).toList();
 
     return ListView(
-      padding: const EdgeInsets.only(bottom: 80), // Platz für FAB
+      padding: const EdgeInsets.only(bottom: 80),
       children: [
         if (defaults.isNotEmpty) ...[
-          const _SectionHeader(text: 'Standardkategorien'),
+          _SectionHeader(text: l10n.defaultCategoriesSection),
           ...defaults.map((c) => _CategoryTile(category: c)),
         ],
         if (customs.isNotEmpty) ...[
-          const _SectionHeader(text: 'Eigene Kategorien'),
+          _SectionHeader(text: l10n.customCategoriesSection),
           ...customs.map((c) => _CategoryTile(category: c)),
         ],
       ],
@@ -88,24 +91,21 @@ class _CategoryTile extends ConsumerWidget {
   const _CategoryTile({required this.category});
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Kategorie löschen?'),
-        content: Text(
-          '"${category.name}" wird unwiderruflich gelöscht. '
-          'Bestehende Ausgaben in dieser Kategorie bleiben erhalten, '
-          'zeigen aber keinen Kategorie-Namen mehr an.',
-        ),
+        title: Text(l10n.deleteCategoryQuestion),
+        content: Text(l10n.deleteCategoryDescription(category.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Löschen'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -120,16 +120,15 @@ class _CategoryTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: CategoryAvatar(iconName: category.icon),
       title: Text(category.name),
-      // Standardkategorien zeigen keinen Lösch-Button —
-      // sie sind Teil des Schemas und werden zentral verwaltet.
       trailing: category.isCustom
           ? IconButton(
               icon: const Icon(Icons.delete_outline),
               color: Colors.red,
-              tooltip: 'Löschen',
+              tooltip: l10n.deleteTooltip,
               onPressed: () => _confirmDelete(context, ref),
             )
           : null,
@@ -138,23 +137,22 @@ class _CategoryTile extends ConsumerWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.category_outlined, size: 64, color: Colors.grey),
+          const Icon(Icons.category_outlined, size: 64, color: Colors.grey),
           const SizedBox(height: 16),
-          const Text(
-            'Keine Kategorien vorhanden',
-            style: TextStyle(color: Colors.grey),
+          Text(
+            l10n.noCategoriesYet,
+            style: const TextStyle(color: Colors.grey),
           ),
           const SizedBox(height: 4),
           Text(
-            'Tippe auf + um eine zu erstellen',
+            l10n.tapPlusToCreate,
             style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
           ),
         ],

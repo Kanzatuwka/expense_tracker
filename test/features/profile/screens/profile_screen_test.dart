@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../fakes/in_memory_auth_repository.dart';
 import '../../../fakes/in_memory_user_profile_repository.dart';
+import '../../../helpers/localized_app.dart';
 
 class _Setup {
   final InMemoryAuthRepository auth;
@@ -31,7 +32,7 @@ Widget _buildApp(_Setup s) {
       authRepositoryProvider.overrideWithValue(s.auth),
       userProfileRepositoryProvider.overrideWithValue(s.profile),
     ],
-    child: const MaterialApp(home: ProfileScreen()),
+    child: localizedApp(const ProfileScreen()),
   );
 }
 

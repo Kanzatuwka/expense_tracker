@@ -1,5 +1,6 @@
 import 'package:expense_tracker/core/widgets/category_icon.dart';
 import 'package:expense_tracker/features/categories/providers/categories_provider.dart';
+import 'package:expense_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,11 +26,12 @@ class _CategoryCreateScreenState extends ConsumerState<CategoryCreateScreen> {
   }
 
   Future<void> _save() async {
+    final l10n = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
     if (_selectedIcon == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bitte ein Icon auswählen'),
+        SnackBar(
+          content: Text(l10n.pleaseSelectIcon),
           backgroundColor: Colors.red,
         ),
       );
@@ -49,7 +51,7 @@ class _CategoryCreateScreenState extends ConsumerState<CategoryCreateScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Fehler beim Speichern: $e'),
+            content: Text(l10n.errorSaving(e)),
             backgroundColor: Colors.red,
           ),
         );
@@ -61,8 +63,9 @@ class _CategoryCreateScreenState extends ConsumerState<CategoryCreateScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: AppBar(title: const Text('Neue Kategorie')),
+      appBar: AppBar(title: Text(l10n.newCategoryTitle)),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -70,53 +73,53 @@ class _CategoryCreateScreenState extends ConsumerState<CategoryCreateScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                prefixIcon: Icon(Icons.label_outline),
-                border: OutlineInputBorder(),
+              TextFormField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: l10n.nameLabel,
+                  prefixIcon: const Icon(Icons.label_outline),
+                  border: const OutlineInputBorder(),
+                ),
+                textCapitalization: TextCapitalization.sentences,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return l10n.pleaseEnterName;
+                  }
+                  if (value.trim().length > 30) {
+                    return l10n.nameTooLong;
+                  }
+                  return null;
+                },
               ),
-              textCapitalization: TextCapitalization.sentences,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Bitte einen Namen eingeben';
-                }
-                if (value.trim().length > 30) {
-                  return 'Name darf maximal 30 Zeichen lang sein';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Icon auswählen',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+              const SizedBox(height: 24),
+              Text(
+                l10n.chooseIcon,
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            _IconPicker(
-              selected: _selectedIcon,
-              onSelect: (icon) => setState(() => _selectedIcon = icon),
-            ),
-            const SizedBox(height: 24),
-            FilledButton(
-              onPressed: _isLoading ? null : _save,
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
+              const SizedBox(height: 12),
+              _IconPicker(
+                selected: _selectedIcon,
+                onSelect: (icon) => setState(() => _selectedIcon = icon),
               ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text('Speichern'),
-            ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: _isLoading ? null : _save,
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(l10n.save),
+              ),
             ],
           ),
         ),

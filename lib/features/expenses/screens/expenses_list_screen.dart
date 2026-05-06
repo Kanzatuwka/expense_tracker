@@ -1,4 +1,5 @@
 import 'package:expense_tracker/core/widgets/category_icon.dart';
+import 'package:expense_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,25 +17,24 @@ class ExpensesListScreen extends ConsumerStatefulWidget {
 }
 
 class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
-  // null bedeutet "Alle Kategorien anzeigen"
   String? _selectedCategoryId;
 
-  // Bestätigungsdialog für Swipe-to-Delete
   Future<bool?> _confirmDeleteDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ausgabe löschen?'),
-        content: const Text('Diese Ausgabe wird unwiderruflich gelöscht.'),
+        title: Text(l10n.deleteExpenseQuestion),
+        content: Text(l10n.deleteExpenseDescription),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Löschen'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -43,17 +43,17 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final expensesAsync = ref.watch(expensesProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Meine Ausgaben')),
+      appBar: AppBar(title: Text(l10n.expensesTitle)),
 
       body: expensesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Fehler: $e')),
+        error: (e, _) => Center(child: Text(l10n.errorPrefix(e))),
         data: (expenses) {
-          // Gefilterte Liste nach ausgewählter Kategorie
           final filtered = _selectedCategoryId == null
               ? expenses
               : expenses
@@ -62,9 +62,7 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
 
           return Column(
             children: [
-              // Gesamtbetrag der gefilterten Liste
               _TotalSummary(expenses: filtered),
-              // Kategorie-Filter — aus Firestore geladen
               categoriesAsync.when(
                 loading: () => const SizedBox(height: 48),
                 error: (e, _) => const SizedBox(height: 48),
@@ -76,22 +74,21 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
                   },
                 ),
               ),
-              // Ausgabenliste
               Expanded(
                 child: filtered.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.receipt_long_outlined,
                               size: 64,
                               color: Colors.grey,
                             ),
-                            SizedBox(height: 16),
+                            const SizedBox(height: 16),
                             Text(
-                              'Keine Ausgaben vorhanden',
-                              style: TextStyle(color: Colors.grey),
+                              l10n.noExpenses,
+                              style: const TextStyle(color: Colors.grey),
                             ),
                           ],
                         ),
@@ -100,7 +97,6 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
                         itemCount: filtered.length,
                         itemBuilder: (context, index) {
                           final expense = filtered[index];
-                          // Kategorie für diese Ausgabe finden
                           final category = categoriesAsync.value
                               ?.where((c) => c.id == expense.categoryId)
                               .firstOrNull;
@@ -118,9 +114,8 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
                                 color: Colors.white,
                               ),
                             ),
-                            confirmDismiss: (_) => _confirmDeleteDialog(
-                              context,
-                            ),
+                            confirmDismiss: (_) =>
+                                _confirmDeleteDialog(context),
                             onDismissed: (_) async {
                               await ref
                                   .read(expensesNotifierProvider.notifier)
@@ -142,7 +137,6 @@ class _ExpensesListScreenState extends ConsumerState<ExpensesListScreen> {
   }
 }
 
-// Horizontale Filterleiste mit Kategorie-Chips
 class _CategoryFilter extends StatelessWidget {
   final List<Category> categories;
   final String? selectedCategoryId;
@@ -156,22 +150,21 @@ class _CategoryFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       height: 48,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
-          // "Alle" Chip
           Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
-              label: const Text('Alle'),
+              label: Text(l10n.filterAll),
               selected: selectedCategoryId == null,
               onSelected: (_) => onCategorySelected(null),
             ),
           ),
-          // Ein Chip pro Kategorie
           ...categories.map((category) {
             return Padding(
               padding: const EdgeInsets.only(right: 8),
@@ -190,7 +183,6 @@ class _CategoryFilter extends StatelessWidget {
   }
 }
 
-// Gesamtbetrag der gefilterten Ausgaben
 class _TotalSummary extends StatelessWidget {
   final List<Expense> expenses;
 
@@ -198,6 +190,7 @@ class _TotalSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final total = expenses.fold(0.0, (sum, e) => sum + e.amount);
 
     return Container(
@@ -211,7 +204,7 @@ class _TotalSummary extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'Gesamtbetrag',
+            l10n.totalAmount,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onPrimaryContainer,
             ),
@@ -230,7 +223,6 @@ class _TotalSummary extends StatelessWidget {
   }
 }
 
-// Einzelne Ausgabe in der Liste
 class _ExpenseListTile extends StatelessWidget {
   final Expense expense;
   final Category? category;
@@ -239,9 +231,10 @@ class _ExpenseListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return ListTile(
       leading: CategoryAvatar(iconName: category?.icon),
-      title: Text(category?.name ?? 'Unbekannt'),
+      title: Text(category?.name ?? l10n.unknownCategory),
       subtitle: Text(
         expense.note.isNotEmpty
             ? expense.note

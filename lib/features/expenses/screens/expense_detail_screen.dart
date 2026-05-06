@@ -1,4 +1,5 @@
 import 'package:expense_tracker/core/widgets/category_icon.dart';
+import 'package:expense_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,22 +14,22 @@ class ExpenseDetailScreen extends ConsumerWidget {
 
   const ExpenseDetailScreen({super.key, required this.expense, this.category});
 
-  // Löschdialog anzeigen
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ausgabe löschen?'),
-        content: const Text('Diese Ausgabe wird unwiderruflich gelöscht.'),
+        title: Text(l10n.deleteExpenseQuestion),
+        content: Text(l10n.deleteExpenseDescription),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Abbrechen'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Löschen'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -44,29 +45,27 @@ class ExpenseDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Details'),
+        title: Text(l10n.detailsTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit_outlined),
-            tooltip: 'Bearbeiten',
+            tooltip: l10n.editTooltip,
             onPressed: () async {
               await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => ExpenseFormScreen(existing: expense),
                 ),
               );
-              // Detail-Screen zeigt einen Snapshot aus dem Konstruktor — nach
-              // einer Bearbeitung wäre er stale. Daher zurück zur Liste, die
-              // den Stream-Provider beobachtet und automatisch aktualisiert.
               if (context.mounted) Navigator.of(context).pop();
             },
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
             color: Colors.red,
-            tooltip: 'Löschen',
+            tooltip: l10n.deleteTooltip,
             onPressed: () => _confirmDelete(context, ref),
           ),
         ],
@@ -76,7 +75,6 @@ class ExpenseDetailScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Betrag
             Center(
               child: Text(
                 '${expense.amount.toStringAsFixed(2)} €',
@@ -87,22 +85,20 @@ class ExpenseDetailScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 32),
-            // Detailkarte
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    // Kategorie mit Icon
                     _DetailRow(
                       icon: iconDataForCategory(category?.icon),
-                      label: 'Kategorie',
-                      value: category?.name ?? 'Unbekannt',
+                      label: l10n.categoryLabel,
+                      value: category?.name ?? l10n.unknownCategory,
                     ),
                     const Divider(),
                     _DetailRow(
                       icon: Icons.calendar_today_outlined,
-                      label: 'Datum',
+                      label: l10n.dateLabel,
                       value:
                           '${expense.date.day}.${expense.date.month}.${expense.date.year}',
                     ),
@@ -110,7 +106,7 @@ class ExpenseDetailScreen extends ConsumerWidget {
                       const Divider(),
                       _DetailRow(
                         icon: Icons.note_outlined,
-                        label: 'Notiz',
+                        label: l10n.noteLabel,
                         value: expense.note,
                       ),
                     ],
@@ -125,7 +121,6 @@ class ExpenseDetailScreen extends ConsumerWidget {
   }
 }
 
-// Hilfswidget für eine Detailzeile
 class _DetailRow extends StatelessWidget {
   final IconData icon;
   final String label;

@@ -55,4 +55,12 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
   }) async {
     await _doc(userId).update({'preferredTheme': theme});
   }
+
+  @override
+  Future<void> updateLanguage({
+    required String userId,
+    required String language,
+  }) async {
+    await _doc(userId).update({'preferredLanguage': language});
+  }
 }
