@@ -281,4 +281,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noBudgetSet => 'No limit set';
+
+  @override
+  String budgetWarning(String category, int percent) {
+    return '⚠ $category: $percent% of monthly budget used';
+  }
+
+  @override
+  String budgetExceeded(String category) {
+    return '$category: monthly budget exceeded';
+  }
+
+  @override
+  String get budgetSummaryTitle => 'Monthly Budget Report';
+
+  @override
+  String budgetLimitsRefreshed(String month) {
+    return '✓ Limits reset for $month';
+  }
+
+  @override
+  String get close => 'Close';
 }

@@ -42,3 +42,25 @@ class BudgetsNotifier extends Notifier<void> {
 final budgetsNotifierProvider = NotifierProvider<BudgetsNotifier, void>(() {
   return BudgetsNotifier();
 });
+
+/// Зберігає в Firestore, що підсумок поточного місяця вже показано.
+class BudgetSummaryNotifier extends Notifier<void> {
+  @override
+  void build() {}
+
+  Future<void> markSummaryShown() async {
+    final userId = ref.read(authRepositoryProvider).currentUserId;
+    if (userId == null) return;
+    final now = DateTime.now();
+    await ref.read(userProfileRepositoryProvider).updateBudgetSummaryShown(
+      userId: userId,
+      year: now.year,
+      month: now.month,
+    );
+  }
+}
+
+final budgetSummaryNotifierProvider =
+    NotifierProvider<BudgetSummaryNotifier, void>(() {
+      return BudgetSummaryNotifier();
+    });

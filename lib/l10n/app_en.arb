@@ -110,5 +110,27 @@
   "setBudgetTitle": "Set budget",
   "editBudgetTitle": "Edit budget",
   "monthlyLimitLabel": "Monthly limit (€)",
-  "noBudgetSet": "No limit set"
+  "noBudgetSet": "No limit set",
+
+  "budgetWarning": "⚠ {category}: {percent}% of monthly budget used",
+  "@budgetWarning": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "percent": { "type": "int" }
+    }
+  },
+  "budgetExceeded": "{category}: monthly budget exceeded",
+  "@budgetExceeded": {
+    "placeholders": {
+      "category": { "type": "String" }
+    }
+  },
+  "budgetSummaryTitle": "Monthly Budget Report",
+  "budgetLimitsRefreshed": "✓ Limits reset for {month}",
+  "@budgetLimitsRefreshed": {
+    "placeholders": {
+      "month": { "type": "String" }
+    }
+  },
+  "close": "Close"
 }

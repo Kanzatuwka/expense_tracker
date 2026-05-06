@@ -281,4 +281,25 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get noBudgetSet => 'Ліміт не встановлено';
+
+  @override
+  String budgetWarning(String category, int percent) {
+    return '⚠ $category: $percent% місячного бюджету витрачено';
+  }
+
+  @override
+  String budgetExceeded(String category) {
+    return '$category: місячний бюджет перевищено';
+  }
+
+  @override
+  String get budgetSummaryTitle => 'Підсумок бюджету';
+
+  @override
+  String budgetLimitsRefreshed(String month) {
+    return '✓ Ліміти оновлено для $month';
+  }
+
+  @override
+  String get close => 'Закрити';
 }

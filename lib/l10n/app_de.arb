@@ -101,5 +101,11 @@
   "setBudgetTitle": "Budget festlegen",
   "editBudgetTitle": "Budget bearbeiten",
   "monthlyLimitLabel": "Monatslimit (€)",
-  "noBudgetSet": "Kein Limit gesetzt"
+  "noBudgetSet": "Kein Limit gesetzt",
+
+  "budgetWarning": "⚠ {category}: {percent}% des Monatsbudgets verbraucht",
+  "budgetExceeded": "{category}: Monatsbudget überschritten",
+  "budgetSummaryTitle": "Monatsrückblick Budget",
+  "budgetLimitsRefreshed": "✓ Limits für {month} zurückgesetzt",
+  "close": "Schließen"
 }

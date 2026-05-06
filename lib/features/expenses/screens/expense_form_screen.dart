@@ -1,3 +1,4 @@
+import 'package:expense_tracker/features/budgets/providers/budgets_provider.dart';
 import 'package:expense_tracker/features/categories/providers/categories_provider.dart';
 import 'package:expense_tracker/features/categories/utils/category_display.dart';
 import 'package:expense_tracker/features/categorization/categorization_provider.dart';
@@ -110,7 +111,10 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
           note: note,
         );
       }
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        _checkBudgetThreshold(context, _selectedCategoryId!, amount, _selectedDate);
+        Navigator.of(context).pop();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -122,6 +126,64 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _checkBudgetThreshold(
+    BuildContext context,
+    String categoryId,
+    double newAmount,
+    DateTime date,
+  ) {
+    final now = DateTime.now();
+    if (date.year != now.year || date.month != now.month) return;
+
+    final budgets = ref.read(budgetsProvider).value ?? [];
+    final budget = budgets.where((b) => b.categoryId == categoryId).firstOrNull;
+    if (budget == null) return;
+
+    final expenses = ref.read(expensesProvider).value ?? [];
+    var spent = expenses
+        .where(
+          (e) =>
+              e.categoryId == categoryId &&
+              e.date.year == now.year &&
+              e.date.month == now.month,
+        )
+        .fold(0.0, (sum, e) => sum + e.amount);
+
+    // For edit: old expense is still in stream — subtract it, then add new amount
+    if (_isEdit) {
+      final old = widget.existing!;
+      if (old.categoryId == categoryId &&
+          old.date.year == now.year &&
+          old.date.month == now.month) {
+        spent -= old.amount;
+      }
+    }
+    final newTotal = spent + newAmount;
+    final percent = (newTotal / budget.amount * 100).round();
+
+    final l10n = AppLocalizations.of(context)!;
+    final categories = ref.read(categoriesProvider).value ?? [];
+    final category = categories.where((c) => c.id == categoryId).firstOrNull;
+    final categoryName =
+        category != null ? localizedCategoryName(context, category) : categoryId;
+
+    if (newTotal >= budget.amount) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.budgetExceeded(categoryName)),
+          backgroundColor: Colors.red.shade700,
+        ),
+      );
+    } else if (percent >= 75) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.budgetWarning(categoryName, percent)),
+          backgroundColor: Colors.orange.shade700,
+        ),
+      );
     }
   }
 

@@ -633,6 +633,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No limit set'**
   String get noBudgetSet;
+
+  /// No description provided for @budgetWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'⚠ {category}: {percent}% of monthly budget used'**
+  String budgetWarning(String category, int percent);
+
+  /// No description provided for @budgetExceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'{category}: monthly budget exceeded'**
+  String budgetExceeded(String category);
+
+  /// No description provided for @budgetSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Budget Report'**
+  String get budgetSummaryTitle;
+
+  /// No description provided for @budgetLimitsRefreshed.
+  ///
+  /// In en, this message translates to:
+  /// **'✓ Limits reset for {month}'**
+  String budgetLimitsRefreshed(String month);
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
 }
 
 class _AppLocalizationsDelegate

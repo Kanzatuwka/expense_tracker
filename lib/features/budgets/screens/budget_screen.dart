@@ -1,3 +1,5 @@
+import 'package:expense_tracker/core/widgets/category_icon.dart';
+import 'package:expense_tracker/features/auth/providers/auth_provider.dart';
 import 'package:expense_tracker/features/budgets/models/budget.dart';
 import 'package:expense_tracker/features/budgets/providers/budgets_provider.dart';
 import 'package:expense_tracker/features/categories/models/category.dart';
@@ -8,16 +10,46 @@ import 'package:expense_tracker/l10n/generated/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
-class BudgetScreen extends ConsumerWidget {
+class BudgetScreen extends ConsumerStatefulWidget {
   const BudgetScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BudgetScreen> createState() => _BudgetScreenState();
+}
+
+class _BudgetScreenState extends ConsumerState<BudgetScreen> {
+  bool _summaryCheckDone = false;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final profileAsync = ref.watch(userProfileProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final budgetsAsync = ref.watch(budgetsProvider);
     final expensesAsync = ref.watch(expensesProvider);
+
+    // Once both profile and budgets are loaded, check if summary should show.
+    final profile = profileAsync.value;
+    final budgets = budgetsAsync.value;
+    if (!_summaryCheckDone && profile != null && budgets != null) {
+      _summaryCheckDone = true;
+      final now = DateTime.now();
+      final needsShow =
+          profile.lastBudgetSummaryYear != now.year ||
+          profile.lastBudgetSummaryMonth != now.month;
+      if (needsShow) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          if (budgets.isNotEmpty) {
+            _showMonthlySummary(context, l10n);
+          } else {
+            ref.read(budgetSummaryNotifierProvider.notifier).markSummaryShown();
+          }
+        });
+      }
+    }
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.budgetsTitle)),
@@ -43,9 +75,6 @@ class BudgetScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(vertical: 8),
               itemCount: categories.length,
               separatorBuilder: (_, _) => const Divider(height: 1),
-              // Use '_' to avoid shadowing the outer ConsumerWidget 'context'.
-              // The outer context is stable across list rebuilds and is safe
-              // to pass to showDialog.
               itemBuilder: (_, i) {
                 final category = categories[i];
                 final budget = budgets
@@ -56,7 +85,7 @@ class BudgetScreen extends ConsumerWidget {
                   category: category,
                   budget: budget,
                   spent: spent,
-                  onTap: () => _openDialog(context, ref, l10n, category, budget),
+                  onTap: () => _openDialog(context, l10n, category, budget),
                 );
               },
             );
@@ -68,7 +97,6 @@ class BudgetScreen extends ConsumerWidget {
 
   void _openDialog(
     BuildContext context,
-    WidgetRef ref,
     AppLocalizations l10n,
     Category category,
     Budget? existing,
@@ -92,7 +120,41 @@ class BudgetScreen extends ConsumerWidget {
       ),
     );
   }
+
+  void _showMonthlySummary(BuildContext context, AppLocalizations l10n) {
+    final expenses = ref.read(expensesProvider).value ?? [];
+    final budgets = ref.read(budgetsProvider).value ?? [];
+    final categories = ref.read(categoriesProvider).value ?? [];
+
+    final now = DateTime.now();
+    final prevYear = now.month == 1 ? now.year - 1 : now.year;
+    final prevMonth = now.month == 1 ? 12 : now.month - 1;
+
+    final prevMonthSpending = <String, double>{};
+    for (final expense in expenses) {
+      if (expense.date.year == prevYear && expense.date.month == prevMonth) {
+        prevMonthSpending[expense.categoryId] =
+            (prevMonthSpending[expense.categoryId] ?? 0) + expense.amount;
+      }
+    }
+
+    showDialog<void>(
+      context: context,
+      builder: (_) => _BudgetSummaryDialog(
+        l10n: l10n,
+        budgets: budgets,
+        categories: categories,
+        prevMonthSpending: prevMonthSpending,
+        prevYear: prevYear,
+        prevMonth: prevMonth,
+        onClose: () =>
+            ref.read(budgetSummaryNotifierProvider.notifier).markSummaryShown(),
+      ),
+    );
+  }
 }
+
+// ─── Budget edit dialog ───────────────────────────────────────────────────────
 
 class _BudgetDialog extends StatefulWidget {
   final AppLocalizations l10n;
@@ -192,6 +254,147 @@ class _BudgetDialogState extends State<_BudgetDialog> {
   }
 }
 
+// ─── Monthly summary dialog ───────────────────────────────────────────────────
+
+class _BudgetSummaryDialog extends StatelessWidget {
+  final AppLocalizations l10n;
+  final List<Budget> budgets;
+  final List<Category> categories;
+  final Map<String, double> prevMonthSpending;
+  final int prevYear;
+  final int prevMonth;
+  final VoidCallback onClose;
+
+  const _BudgetSummaryDialog({
+    required this.l10n,
+    required this.budgets,
+    required this.categories,
+    required this.prevMonthSpending,
+    required this.prevYear,
+    required this.prevMonth,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final locale = Localizations.localeOf(context).toString();
+    final prevDate = DateTime(prevYear, prevMonth);
+    final prevMonthName = DateFormat('LLLL y', locale).format(prevDate);
+    final currentMonthName =
+        DateFormat('LLLL y', locale).format(DateTime.now());
+
+    final rows = budgets
+        .map((budget) {
+          final category =
+              categories.where((c) => c.id == budget.categoryId).firstOrNull;
+          if (category == null) return null;
+          final spent = prevMonthSpending[budget.categoryId] ?? 0.0;
+          final progress = (spent / budget.amount).clamp(0.0, 1.0);
+          final exceeded = spent > budget.amount;
+
+          final progressColor = exceeded
+              ? Colors.red.shade600
+              : progress >= 0.75
+              ? Colors.orange.shade600
+              : Colors.green.shade600;
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CategoryAvatar(iconName: category.icon, size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        localizedCategoryName(context, category),
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    Icon(
+                      exceeded ? Icons.warning_amber_rounded : Icons.check_circle_outline,
+                      size: 18,
+                      color: exceeded ? Colors.red.shade600 : Colors.green.shade600,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                LinearProgressIndicator(
+                  value: progress,
+                  color: progressColor,
+                  backgroundColor: scheme.surfaceContainerHighest,
+                  minHeight: 6,
+                  borderRadius: BorderRadius.circular(3),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${spent.toStringAsFixed(2)} / ${budget.amount.toStringAsFixed(2)} €',
+                  style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
+                ),
+              ],
+            ),
+          );
+        })
+        .nonNulls
+        .toList();
+
+    return AlertDialog(
+      title: Text(l10n.budgetSummaryTitle),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                prevMonthName,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: scheme.onSurfaceVariant,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ...rows,
+              const Divider(height: 24),
+              Row(
+                children: [
+                  Icon(Icons.refresh, size: 16, color: Colors.green.shade600),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      l10n.budgetLimitsRefreshed(currentMonthName),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green.shade700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        FilledButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            onClose();
+          },
+          child: Text(l10n.close),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Budget row ───────────────────────────────────────────────────────────────
+
 class _BudgetRow extends StatelessWidget {
   final Category category;
   final Budget? budget;
@@ -228,7 +431,7 @@ class _BudgetRow extends StatelessWidget {
       leading: CircleAvatar(
         backgroundColor: scheme.primaryContainer,
         child: Icon(
-          _iconData(category.icon),
+          iconDataForCategory(category.icon),
           color: scheme.onPrimaryContainer,
           size: 20,
         ),
@@ -263,16 +466,5 @@ class _BudgetRow extends StatelessWidget {
         size: 20,
       ),
     );
-  }
-
-  IconData _iconData(String? name) {
-    return switch (name) {
-      'restaurant' => Icons.restaurant,
-      'directions_bus' => Icons.directions_bus,
-      'favorite' => Icons.favorite,
-      'sports_esports' => Icons.sports_esports,
-      'category' => Icons.category,
-      _ => Icons.label_outline,
-    };
   }
 }

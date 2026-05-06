@@ -27,4 +27,11 @@ abstract class UserProfileRepository {
     required String userId,
     required String language,
   });
+
+  /// Merkt, dass der Monats-Budget-Bericht für [year]/[month] angezeigt wurde.
+  Future<void> updateBudgetSummaryShown({
+    required String userId,
+    required int year,
+    required int month,
+  });
 }

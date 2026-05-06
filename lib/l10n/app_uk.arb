@@ -101,5 +101,11 @@
   "setBudgetTitle": "Встановити бюджет",
   "editBudgetTitle": "Редагувати бюджет",
   "monthlyLimitLabel": "Місячний ліміт (€)",
-  "noBudgetSet": "Ліміт не встановлено"
+  "noBudgetSet": "Ліміт не встановлено",
+
+  "budgetWarning": "⚠ {category}: {percent}% місячного бюджету витрачено",
+  "budgetExceeded": "{category}: місячний бюджет перевищено",
+  "budgetSummaryTitle": "Підсумок бюджету",
+  "budgetLimitsRefreshed": "✓ Ліміти оновлено для {month}",
+  "close": "Закрити"
 }

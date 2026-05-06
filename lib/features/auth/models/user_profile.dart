@@ -9,6 +9,8 @@ class UserProfile {
   final String preferredLanguage; // 'de' | 'en' | 'uk'
   final String preferredTheme; // 'light' | 'dark' | 'system'
   final DateTime createdAt;
+  final int? lastBudgetSummaryYear;
+  final int? lastBudgetSummaryMonth;
 
   const UserProfile({
     required this.userId,
@@ -16,6 +18,8 @@ class UserProfile {
     required this.preferredLanguage,
     required this.preferredTheme,
     required this.createdAt,
+    this.lastBudgetSummaryYear,
+    this.lastBudgetSummaryMonth,
   });
 
   /// Konvertiert eine Map mit primitiven Dart-Typen in ein [UserProfile].
@@ -27,6 +31,8 @@ class UserProfile {
       preferredLanguage: data['preferredLanguage'] as String? ?? 'de',
       preferredTheme: data['preferredTheme'] as String? ?? 'system',
       createdAt: data['createdAt'] as DateTime,
+      lastBudgetSummaryYear: data['lastBudgetSummaryYear'] as int?,
+      lastBudgetSummaryMonth: data['lastBudgetSummaryMonth'] as int?,
     );
   }
 
@@ -39,7 +45,6 @@ class UserProfile {
     };
   }
 
-  /// Erzeugt eine Kopie mit überschriebenen Feldern — nützlich für updates.
   UserProfile copyWith({
     String? subscriptionStatus,
     String? preferredLanguage,
@@ -51,6 +56,8 @@ class UserProfile {
       preferredLanguage: preferredLanguage ?? this.preferredLanguage,
       preferredTheme: preferredTheme ?? this.preferredTheme,
       createdAt: createdAt,
+      lastBudgetSummaryYear: lastBudgetSummaryYear,
+      lastBudgetSummaryMonth: lastBudgetSummaryMonth,
     );
   }
 }

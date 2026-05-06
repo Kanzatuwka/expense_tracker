@@ -82,5 +82,12 @@ class InMemoryUserProfileRepository implements UserProfileRepository {
     _emit();
   }
 
+  @override
+  Future<void> updateBudgetSummaryShown({
+    required String userId,
+    required int year,
+    required int month,
+  }) async {}
+
   Future<void> dispose() => _changes.close();
 }

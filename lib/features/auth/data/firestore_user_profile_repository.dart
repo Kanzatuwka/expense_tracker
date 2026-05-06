@@ -22,6 +22,8 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
     return UserProfile.fromMap({
       ...data,
       'createdAt': (data['createdAt'] as Timestamp).toDate(),
+      'lastBudgetSummaryYear': data['lastBudgetSummaryYear'] as int?,
+      'lastBudgetSummaryMonth': data['lastBudgetSummaryMonth'] as int?,
     }, doc.id);
   }
 
@@ -62,5 +64,17 @@ class FirestoreUserProfileRepository implements UserProfileRepository {
     required String language,
   }) async {
     await _doc(userId).update({'preferredLanguage': language});
+  }
+
+  @override
+  Future<void> updateBudgetSummaryShown({
+    required String userId,
+    required int year,
+    required int month,
+  }) async {
+    await _doc(userId).update({
+      'lastBudgetSummaryYear': year,
+      'lastBudgetSummaryMonth': month,
+    });
   }
 }
