@@ -88,5 +88,12 @@
   "categoryTransport": "Transport",
   "categoryHealth": "Gesundheit",
   "categoryLeisure": "Freizeit",
-  "categoryOther": "Sonstiges"
+  "categoryOther": "Sonstiges",
+
+  "reportsTitle": "Berichte",
+  "summarySection": "Zusammenfassung",
+  "topCategoriesSection": "Top-Kategorien",
+  "dailyAvgLabel": "Ø pro Tag",
+  "vsLastMonth": "vs. Vormonat",
+  "noDataForMonth": "Keine Ausgaben in diesem Monat"
 }

@@ -88,5 +88,12 @@
   "categoryTransport": "Транспорт",
   "categoryHealth": "Здоров'я",
   "categoryLeisure": "Дозвілля",
-  "categoryOther": "Інше"
+  "categoryOther": "Інше",
+
+  "reportsTitle": "Звіти",
+  "summarySection": "Підсумок",
+  "topCategoriesSection": "Топ категорій",
+  "dailyAvgLabel": "Середнє/день",
+  "vsLastMonth": "vs. попер. місяць",
+  "noDataForMonth": "Немає витрат за цей місяць"
 }

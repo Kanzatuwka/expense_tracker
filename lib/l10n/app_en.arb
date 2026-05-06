@@ -97,5 +97,12 @@
   "categoryTransport": "Transport",
   "categoryHealth": "Health",
   "categoryLeisure": "Leisure",
-  "categoryOther": "Other"
+  "categoryOther": "Other",
+
+  "reportsTitle": "Reports",
+  "summarySection": "Summary",
+  "topCategoriesSection": "Top categories",
+  "dailyAvgLabel": "Daily avg.",
+  "vsLastMonth": "vs. last month",
+  "noDataForMonth": "No expenses this month"
 }

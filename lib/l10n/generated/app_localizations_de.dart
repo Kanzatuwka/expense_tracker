@@ -249,4 +249,22 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get categoryOther => 'Sonstiges';
+
+  @override
+  String get reportsTitle => 'Berichte';
+
+  @override
+  String get summarySection => 'Zusammenfassung';
+
+  @override
+  String get topCategoriesSection => 'Top-Kategorien';
+
+  @override
+  String get dailyAvgLabel => 'Ø pro Tag';
+
+  @override
+  String get vsLastMonth => 'vs. Vormonat';
+
+  @override
+  String get noDataForMonth => 'Keine Ausgaben in diesem Monat';
 }

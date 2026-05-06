@@ -248,4 +248,22 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get categoryOther => 'Інше';
+
+  @override
+  String get reportsTitle => 'Звіти';
+
+  @override
+  String get summarySection => 'Підсумок';
+
+  @override
+  String get topCategoriesSection => 'Топ категорій';
+
+  @override
+  String get dailyAvgLabel => 'Середнє/день';
+
+  @override
+  String get vsLastMonth => 'vs. попер. місяць';
+
+  @override
+  String get noDataForMonth => 'Немає витрат за цей місяць';
 }

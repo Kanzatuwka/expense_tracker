@@ -567,6 +567,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Other'**
   String get categoryOther;
+
+  /// No description provided for @reportsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports'**
+  String get reportsTitle;
+
+  /// No description provided for @summarySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary'**
+  String get summarySection;
+
+  /// No description provided for @topCategoriesSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Top categories'**
+  String get topCategoriesSection;
+
+  /// No description provided for @dailyAvgLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily avg.'**
+  String get dailyAvgLabel;
+
+  /// No description provided for @vsLastMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'vs. last month'**
+  String get vsLastMonth;
+
+  /// No description provided for @noDataForMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenses this month'**
+  String get noDataForMonth;
 }
 
 class _AppLocalizationsDelegate
