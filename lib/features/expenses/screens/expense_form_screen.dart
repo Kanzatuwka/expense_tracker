@@ -22,6 +22,7 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   final _noteController = TextEditingController();
 
   String? _selectedCategoryId;
+  bool _isSuggested = false;
   late DateTime _selectedDate;
   bool _isLoading = false;
 
@@ -43,12 +44,15 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   }
 
   void _onNoteChanged() {
-    if (_selectedCategoryId != null) return;
+    if (!_isSuggested && _selectedCategoryId != null) return;
     final categories = ref.read(categoriesProvider).value;
     if (categories == null) return;
     final service = ref.read(categorizationServiceProvider);
     final suggestion = service.suggestCategoryId(_noteController.text, categories);
-    if (suggestion != null) setState(() => _selectedCategoryId = suggestion);
+    setState(() {
+      _selectedCategoryId = suggestion;
+      _isSuggested = suggestion != null;
+    });
   }
 
   @override
@@ -177,7 +181,10 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                     );
                   }).toList(),
                   onChanged: (value) {
-                    setState(() => _selectedCategoryId = value);
+                    setState(() {
+                      _selectedCategoryId = value;
+                      _isSuggested = false;
+                    });
                   },
                 ),
               ),
